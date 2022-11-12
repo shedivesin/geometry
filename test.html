@@ -76,6 +76,21 @@ module("ConstructibleNumber", () => {
     assert_equal(new Literal(-5).dividedBy(new Literal(-1)), "5");
   });
 
+  test("should negate a literal", () => {
+    assert_equal(Literal.ONE.negate(), -1);
+    assert_equal(Literal.NEGATIVE_ONE.negate(), 1);
+  });
+
+  test("should negate a fraction", () => {
+    assert_equal(Fraction.ONE_HALF.negate(), "-1/2");
+    assert_equal(Literal.NEGATIVE_ONE.dividedBy(Literal.TWO).negate(), "1/2");
+  });
+
+  test("should negate a square root", () => {
+    assert_equal(SquareRoot.ROOT_TWO.negate(), "-√2");
+    assert_equal(SquareRoot.ROOT_TWO.negate().negate(), "√2");
+  });
+
   test("should square a literal", () => {
     assert_equal(new Literal(12).squared(), 144);
   });

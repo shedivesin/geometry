@@ -106,10 +106,10 @@ class Literal extends ConstructibleNumber {
       const d = gcd(this.value, that.value);
       if(d === that.value) { return new Literal(this.value / d); }
       if(d !== 1) {
-        return new Fraction(
-          new Literal(this.value / d),
-          new Literal(that.value / d),
-        );
+        let num = this.value / d;
+        let den = that.value / d;
+        if(den < 0) { num = -num; den = -den; }
+        return new Fraction(new Literal(num), new Literal(den));
       }
     }
 
