@@ -1,11 +1,3 @@
-<!doctype html>
-<meta charset=utf-8>
-<title>Geometric Construction Search</title>
-<style>
-.tbd{color:gray}
-.fail{color:crimson}
-</style>
-<script>
 "use strict";
 
 function assert(test, message) {
@@ -46,11 +38,3 @@ function module(name, fn) {
     document.write("<dd class=fail>" + name + " FAILED: " + err.message + "</dd>");
   }
 }
-</script>
-<script src=constructible_number.js></script>
-<script src=geometry.js></script>
-
-<h1>Geometric Construction Search</h1>
-<dl>
-<script src=test.js></script>
-</dl>
