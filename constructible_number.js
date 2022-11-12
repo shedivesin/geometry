@@ -33,17 +33,11 @@ class ConstructibleNumber {
     throw new RangeError(`Unsupported: ${this.constructor.name}*${that.constructor.name}`);
   }
 
-  dividedBy(that) {
-    throw new RangeError(`Unsupported: ${this.constructor.name}/${that.constructor.name}`);
-  }
+  dividedBy(that) { return new Fraction(this, that); }
 
-  squared() {
-    return this.times(this);
-  }
+  squared() { return this.times(this); }
 
-  squareRoot() {
-    throw new RangeError(`Unsupported: √${this.constructor.name}`);
-  }
+  squareRoot() { return new SquareRoot(this); }
 }
 
 
@@ -56,7 +50,7 @@ class Literal extends ConstructibleNumber {
 
   plus(that) {
     if(that instanceof Literal) { return new Literal(this.value + that.value); }
-    return super.plus(that);
+    return that.plus(this);
   }
 
   minus(that) {
@@ -66,7 +60,7 @@ class Literal extends ConstructibleNumber {
 
   times(that) {
     if(that instanceof Literal) { return new Literal(this.value * that.value); }
-    return super.times(that);
+    return that.times(this);
   }
 
   dividedBy(that) {
@@ -83,14 +77,14 @@ class Literal extends ConstructibleNumber {
       }
     }
 
-    return new Fraction(this, that);
+    return super.dividedBy(that);
   }
 
   squareRoot() {
     const sqrt_value = Math.sqrt(this.value);
     if(Number.isInteger(sqrt_value)) { return new Literal(sqrt_value); }
 
-    return new SquareRoot(this);
+    return super.squareRoot();
   }
 }
 
@@ -102,13 +96,9 @@ class Fraction extends ConstructibleNumber {
 
   toString() { return this.num.toString() + "/" + this.den.toString(); }
 
-  squared() {
-    return this.num.squared().dividedBy(this.den.squared());
-  }
+  squared() { return this.num.squared().dividedBy(this.den.squared()); }
 
-  squareRoot() {
-    return this.num.squareRoot().dividedBy(this.den.squareRoot());
-  }
+  squareRoot() { return this.num.squareRoot().dividedBy(this.den.squareRoot()); }
 }
 
 
@@ -118,6 +108,8 @@ class SquareRoot extends ConstructibleNumber {
   valueOf() { return Math.sqrt(this.expr.valueOf()); }
 
   toString() { return "√" + this.expr.toString(); }
+
+  times(that) { return this.expr.times(that.squared()).squareRoot(); }
 
   squared() { return this.expr; }
 }

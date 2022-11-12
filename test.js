@@ -25,6 +25,11 @@ module("Expression", () => {
     assert_equal(new Literal(12).dividedBy(new Literal(8)), "3/2");
   });
 
+  test("it should divide by negative one", () => {
+    assert_equal(new Literal(5).dividedBy(new Literal(-1)), "-5");
+    assert_equal(new Literal(-5).dividedBy(new Literal(-1)), "5");
+  });
+
   test("it should square a literal", () => {
     assert_equal(new Literal(12).squared(), 144);
   });
@@ -35,5 +40,10 @@ module("Expression", () => {
 
   test("it should not simplify the square root of a prime", () => {
     assert_equal(new Literal(65537).squareRoot(), "√65537");
+  });
+
+  test("it should multiply irreducible square roots", () => {
+    assert_equal(new Literal(3).squareRoot().times(new Literal(3)), "√27");
+    assert_equal(new Literal(3).times(new Literal(3).squareRoot()), "√27");
   });
 });
