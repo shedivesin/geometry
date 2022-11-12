@@ -39,24 +39,24 @@ module("ConstructibleNumber", () => {
     assert_equal(new Literal(12).dividedBy(new Literal(8)), "3/2");
   });
 
-  test("it should divide by negative one", () => {
+  test("should divide by negative one", () => {
     assert_equal(new Literal(5).dividedBy(new Literal(-1)), "-5");
     assert_equal(new Literal(-5).dividedBy(new Literal(-1)), "5");
   });
 
-  test("it should square a literal", () => {
+  test("should square a literal", () => {
     assert_equal(new Literal(12).squared(), 144);
   });
 
-  test("it should simplify the square root of a square literal", () => {
+  test("should simplify the square root of a square literal", () => {
     assert_equal(new Literal(25).squareRoot(), 5);
   });
 
-  test("it should not simplify the square root of a prime", () => {
+  test("should not simplify the square root of a prime", () => {
     assert_equal(new Literal(65537).squareRoot(), "√65537");
   });
 
-  test("it should multiply irreducible square roots", () => {
+  test("should multiply irreducible square roots", () => {
     assert_equal(new Literal(3).squareRoot().times(new Literal(3)), "√27");
     assert_equal(new Literal(3).times(new Literal(3).squareRoot()), "√27");
   });
