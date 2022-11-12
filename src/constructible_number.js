@@ -67,14 +67,22 @@ class Literal extends ConstructibleNumber {
   toString() { return this.value.toString(); }
 
   plus(that) {
-    if(that instanceof Literal && that.value === 0) { return this; }
-    if(that instanceof Literal) { return new Literal(this.value + that.value); }
-    return super.plus(this);
+    if(that instanceof Literal) {
+      if(this.value === 0) { return that; }
+      if(that.value === 0) { return this; }
+      return new Literal(this.value + that.value);
+    }
+
+    return super.plus(that);
   }
 
   minus(that) {
-    if(that instanceof Literal && that.value === 0) { return this; }
-    if(that instanceof Literal) { return new Literal(this.value - that.value); }
+    if(that instanceof Literal) {
+      if(this.value === 0) { return that.negate(); }
+      if(that.value === 0) { return this; }
+      return new Literal(this.value - that.value);
+    }
+
     return super.minus(that);
   }
 
@@ -112,7 +120,16 @@ class Literal extends ConstructibleNumber {
     return super.dividedBy(that);
   }
 
+  negate() {
+    if(this.value === 0) { return Literal.ZERO; }
+    return new Literal(-this.value);
+  }
+
   squareRoot() {
+    if(this.value < 0) {
+      throw new RangeError("Square root is not defined for negative numbers");
+    }
+
     const sqrt_value = Math.sqrt(this.value);
     if(Number.isInteger(sqrt_value)) { return new Literal(sqrt_value); }
 
@@ -164,6 +181,8 @@ class Fraction extends ConstructibleNumber {
     }
     return this.num.dividedBy(this.den.times(that));
   }
+
+  negate() { return this.num.negate().dividedBy(this.den); }
 
   squared() { return this.num.squared().dividedBy(this.den.squared()); }
 
