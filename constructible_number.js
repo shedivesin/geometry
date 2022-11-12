@@ -1,3 +1,6 @@
+"use strict";
+
+
 function gcd(a, b) {
   while(b) {
     const t = b;
@@ -9,7 +12,7 @@ function gcd(a, b) {
 }
 
 
-class Expression {
+class ConstructibleNumber {
   valueOf() {
     throw new RangeError(`Unsupported: ${this.constructor.name}#valueOf()`);
   }
@@ -44,7 +47,7 @@ class Expression {
 }
 
 
-class Literal extends Expression {
+class Literal extends ConstructibleNumber {
   constructor(value) { super(); this.value = value; }
 
   valueOf() { return this.value; }
@@ -92,14 +95,12 @@ class Literal extends Expression {
 }
 
 
-class Fraction extends Expression {
-  constructor(num, den) { this.num = num; this.den = den; }
+class Fraction extends ConstructibleNumber {
+  constructor(num, den) { super(); this.num = num; this.den = den; }
 
   valueOf() { return this.num.valueOf() / this.den.valueOf(); }
 
-  toString() {
-    return "(" + this.num.toString() + "/" + this.den.toString() + ")";
-  }
+  toString() { return this.num.toString() + "/" + this.den.toString(); }
 
   squared() {
     return this.num.squared().dividedBy(this.den.squared());
@@ -111,7 +112,7 @@ class Fraction extends Expression {
 }
 
 
-class SquareRoot extends Expression {
+class SquareRoot extends ConstructibleNumber {
   constructor(expr) { super(); this.expr = expr; }
 
   valueOf() { return Math.sqrt(this.expr.valueOf()); }
