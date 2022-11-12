@@ -22,18 +22,21 @@ class ConstructibleNumber {
   }
 
   plus(that) {
+    if(that instanceof Literal && that.value === 0) { return this; }
     throw new RangeError(`Unsupported: ${this.constructor.name}+${that.constructor.name}`);
   }
 
-  minus(that) {
-    throw new RangeError(`Unsupported: ${this.constructor.name}-${that.constructor.name}`);
-  }
+  minus(that) { return this.plus(that.negate()); }
 
   times(that) {
+    if(that instanceof Literal && that.value === 0) { return Literal.ZERO; }
+    if(that instanceof Literal && that.value === 1) { return this; }
     throw new RangeError(`Unsupported: ${this.constructor.name}*${that.constructor.name}`);
   }
 
   dividedBy(that) { return new Fraction(this, that); }
+
+  negate() { return this.times(Literal.NEGATIVE_ONE); }
 
   squared() { return this.times(this); }
 
@@ -61,16 +64,20 @@ class Literal extends ConstructibleNumber {
   toString() { return this.value.toString(); }
 
   plus(that) {
+    if(that instanceof Literal && that.value === 0) { return this; }
     if(that instanceof Literal) { return new Literal(this.value + that.value); }
     return super.plus(this);
   }
 
   minus(that) {
+    if(that instanceof Literal && that.value === 0) { return this; }
     if(that instanceof Literal) { return new Literal(this.value - that.value); }
     return super.minus(that);
   }
 
   times(that) {
+    if(this.value === 0) { return Literal.ZERO; }
+    if(this.value === 1) { return that; }
     if(that instanceof Literal) { return new Literal(this.value * that.value); }
     if(that instanceof Fraction) { return this.times(that.num).dividedBy(that.den); }
     if(that instanceof SquareRoot) { return this.squared().times(that.expr).squareRoot(); }
@@ -78,6 +85,8 @@ class Literal extends ConstructibleNumber {
   }
 
   dividedBy(that) {
+    if(this.value === 0) { return Literal.ZERO; }
+
     if(that instanceof Literal) {
       if(that.value === 0) { throw new RangeError("Cannot divide by zero"); }
       if(that.value === 1) { return this; }
@@ -90,6 +99,10 @@ class Literal extends ConstructibleNumber {
           new Literal(that.value / d),
         );
       }
+    }
+
+    if(that instanceof Fraction) {
+      return this.times(that.den).dividedBy(that.num);
     }
 
     return super.dividedBy(that);
@@ -119,6 +132,7 @@ class Literal extends ConstructibleNumber {
   }
 }
 
+Literal.NEGATIVE_ONE = Object.freeze(new Literal(-1));
 Literal.ZERO = Object.freeze(new Literal(0));
 Literal.ONE = Object.freeze(new Literal(1));
 Literal.TWO = Object.freeze(new Literal(2));
@@ -131,6 +145,16 @@ class Fraction extends ConstructibleNumber {
   valueOf() { return this.num.valueOf() / this.den.valueOf(); }
 
   toString() { return this.num.toString() + "/" + this.den.toString(); }
+
+  times(that) {
+    if(that instanceof Fraction) { return this.num.times(that.num).dividedBy(this.den.times(that.den)); }
+    return this.num.times(that).dividedBy(this.den);
+  }
+
+  dividedBy(that) {
+    if(that instanceof Fraction) { return this.num.times(that.den).dividedBy(this.den.times(that.num)); }
+    return this.num.dividedBy(this.den.times(that));
+  }
 
   squared() { return this.num.squared().dividedBy(this.den.squared()); }
 
