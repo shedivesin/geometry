@@ -88,15 +88,28 @@ module("ConstructibleNumber", () => {
     assert_equal(new Literal(65537).squareRoot(), "√65537");
   });
 
-  test("should compare two literals");
+  test("should compare two literals", () => {
+    assert(Literal.ONE.lessThan(Literal.TWO), "1<2");
+    assert(!Literal.TWO.lessThan(Literal.ONE), "1≮2");
+    assert(Literal.ONE.equals(Literal.ONE), "1=1");
+    assert(!Literal.ONE.equals(Literal.TWO), "1≠2");
+    assert(!Literal.TWO.equals(Literal.ONE), "2≠1");
+    assert(Literal.TWO.greaterThan(Literal.ONE), "2>1");
+    assert(!Literal.ONE.greaterThan(Literal.TWO), "1≯2");
+  });
 
   test("should compare a literal with a fraction");
 
   test("should compare a literal with a square root");
 
-  test("should square a fraction");
+  test("should square a fraction", () => {
+    assert_equal(Fraction.ONE_HALF.squared(), "1/4");
+    assert_equal(Literal.THREE.dividedBy(Literal.TWO).squared(), "9/4");
+  });
 
-  test("should square root a fraction");
+  test("should square root a fraction", () => {
+    assert_equal(new Literal(5).dividedBy(new Literal(4)).squareRoot(), "√5/2");
+  });
 
   test("should compare a fraction with a literal");
 
@@ -110,7 +123,14 @@ module("ConstructibleNumber", () => {
 
   test("should multiply a square root by a fraction");
 
-  test("should multiple a square root by a square root");
+  test("should multiply a square root by itself", () => {
+    assert_equal(SquareRoot.ROOT_TWO.times(SquareRoot.ROOT_TWO), 2);
+  });
+
+  test("should multiply a square root by a square root", () => {
+    assert_equal(SquareRoot.ROOT_TWO.times(SquareRoot.ROOT_THREE), "√6");
+    assert_equal(SquareRoot.ROOT_TWO.times(new Literal(5).squareRoot()), "√10");
+  });
 
   test("should square a square root", () => {
     assert_equal(SquareRoot.ROOT_THREE.squared(), 3);
@@ -120,11 +140,24 @@ module("ConstructibleNumber", () => {
     assert_equal(SquareRoot.ROOT_TWO.squareRoot(), "√√2");
   });
 
-  test("should compare a square root to a literal");
+  test("should compare a square root to a literal", () => {
+    assert(!SquareRoot.ROOT_TWO.lessThan(Literal.ONE), "√2≮1");
+    assert(SquareRoot.ROOT_TWO.lessThan(Literal.TWO), "√2<2");
+    assert(!SquareRoot.ROOT_TWO.equals(Literal.TWO), "√2≠2");
+    assert(SquareRoot.ROOT_TWO.greaterThan(Literal.ONE), "√2>1");
+    assert(!SquareRoot.ROOT_TWO.greaterThan(Literal.TWO), "√2≯2");
+  });
 
   test("should compare a square root to a fraction");
 
-  test("should compare a square root to a square root");
+  test("should compare a square root to a square root", () => {
+    assert(!SquareRoot.ROOT_TWO.lessThan(SquareRoot.ROOT_TWO), "√2≮√2");
+    assert(SquareRoot.ROOT_TWO.lessThan(SquareRoot.ROOT_THREE), "√2<√3");
+    assert(SquareRoot.ROOT_TWO.equals(SquareRoot.ROOT_TWO), "√2=√2");
+    assert(!SquareRoot.ROOT_TWO.equals(SquareRoot.ROOT_THREE), "√2≠√3");
+    assert(SquareRoot.ROOT_THREE.greaterThan(SquareRoot.ROOT_TWO), "√3>√2");
+    assert(!SquareRoot.ROOT_THREE.greaterThan(SquareRoot.ROOT_THREE), "√3≯√3");
+  });
 });
 
 module("Geometry", () => {
