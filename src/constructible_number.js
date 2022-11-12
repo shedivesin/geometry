@@ -79,6 +79,7 @@ class Literal extends ConstructibleNumber {
 
   dividedBy(that) {
     if(that instanceof Literal) {
+      if(that.value === 0) { throw new RangeError("Cannot divide by zero"); }
       if(that.value === 1) { return this; }
 
       const d = gcd(this.value, that.value);
@@ -142,6 +143,8 @@ class Fraction extends ConstructibleNumber {
   }
 }
 
+Fraction.ONE_HALF = Object.freeze(Literal.ONE.dividedBy(Literal.TWO));
+
 
 class SquareRoot extends ConstructibleNumber {
   constructor(expr) { super(); this.expr = expr; }
@@ -157,5 +160,5 @@ class SquareRoot extends ConstructibleNumber {
   equals() { return that instanceof SquareRoot && this.expr.equals(that.expr); }
 }
 
-SquareRoot.TWO = Object.freeze(new SquareRoot(Literal.TWO));
-SquareRoot.THREE = Object.freeze(new SquareRoot(Literal.THREE));
+SquareRoot.TWO = Object.freeze(Literal.TWO.squareRoot());
+SquareRoot.THREE = Object.freeze(Literal.THREE.squareRoot());
