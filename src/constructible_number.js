@@ -144,13 +144,24 @@ class Fraction extends ConstructibleNumber {
 
   toString() { return this.num.toString() + "/" + this.den.toString(); }
 
+  plus(that) {
+    if(that instanceof Fraction && this.den.equals(that.den)) {
+      return this.num.plus(that.num).dividedBy(that.den);
+    }
+    return super.plus(that);
+  }
+
   times(that) {
-    if(that instanceof Fraction) { return this.num.times(that.num).dividedBy(this.den.times(that.den)); }
+    if(that instanceof Fraction) {
+      return this.num.times(that.num).dividedBy(this.den.times(that.den));
+    }
     return this.num.times(that).dividedBy(this.den);
   }
 
   dividedBy(that) {
-    if(that instanceof Fraction) { return this.num.times(that.den).dividedBy(this.den.times(that.num)); }
+    if(that instanceof Fraction) {
+      return this.num.times(that.den).dividedBy(this.den.times(that.num));
+    }
     return this.num.dividedBy(this.den.times(that));
   }
 
