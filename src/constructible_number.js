@@ -118,6 +118,11 @@ class Literal extends ConstructibleNumber {
   }
 }
 
+Literal.ZERO = Object.freeze(new Literal(0));
+Literal.ONE = Object.freeze(new Literal(1));
+Literal.TWO = Object.freeze(new Literal(2));
+Literal.THREE = Object.freeze(new Literal(3));
+
 
 class Fraction extends ConstructibleNumber {
   constructor(num, den) { super(); this.num = num; this.den = den; }
@@ -151,3 +156,6 @@ class SquareRoot extends ConstructibleNumber {
 
   equals() { return that instanceof SquareRoot && this.expr.equals(that.expr); }
 }
+
+SquareRoot.TWO = Object.freeze(new SquareRoot(Literal.TWO));
+SquareRoot.THREE = Object.freeze(new SquareRoot(Literal.THREE));

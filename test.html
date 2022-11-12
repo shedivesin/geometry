@@ -16,7 +16,8 @@
 
 module("ConstructibleNumber", () => {
   test("should add literals", () => {
-    assert_equal(new Literal(2).plus(new Literal(2)), 4);
+    assert_equal(Literal.ONE.plus(Literal.TWO), 3);
+    assert_equal(Literal.TWO.plus(Literal.TWO), 4);
   });
 
   test("should subtract literals", () => {
@@ -57,17 +58,17 @@ module("ConstructibleNumber", () => {
   });
 
   test("should multiply irreducible square roots", () => {
-    assert_equal(new Literal(3).squareRoot().times(new Literal(3)), "√27");
-    assert_equal(new Literal(3).times(new Literal(3).squareRoot()), "√27");
+    assert_equal(SquareRoot.THREE.times(Literal.THREE), "√27");
+    assert_equal(Literal.THREE.times(SquareRoot.THREE), "√27");
   });
 });
 
 module("Geometry", () => {
   test("should make initial circles", () => {
-    const a = new Point(new Literal(0), new Literal(0));
+    const a = new Point(Literal.ZERO, Literal.ZERO);
     assert_equal(a, "0,0");
 
-    const b = new Point(new Literal(1), new Literal(0));
+    const b = new Point(Literal.ONE, Literal.ZERO);
     assert_equal(b, "1,0");
 
     const i = a.circleTo(b);
