@@ -34,7 +34,10 @@ class ConstructibleNumber {
     throw new RangeError(this.constructor.name + "*" + that.constructor.name + " is not supported");
   }
 
-  dividedBy(that) { return new Fraction(this, that); }
+  dividedBy(that) {
+    if(this.equals(that)) { return Literal.ONE; }
+    return new Fraction(this, that);
+  }
 
   negate() { return this.times(Literal.NEGATIVE_ONE); }
 
@@ -90,6 +93,7 @@ class Literal extends ConstructibleNumber {
     if(that instanceof Literal) {
       if(that.value === 0) { throw new RangeError("Cannot divide by zero"); }
       if(that.value === 1) { return this; }
+      if(that.value === this.value) { return Literal.ONE; }
 
       const d = gcd(this.value, that.value);
       if(d === that.value) { return new Literal(this.value / d); }
@@ -179,7 +183,7 @@ class SquareRoot extends ConstructibleNumber {
 
   lessThan(that) { return this.expr.lessThan(that.squared()); }
 
-  equals() { return that instanceof SquareRoot && this.expr.equals(that.expr); }
+  equals(that) { return that instanceof SquareRoot && this.expr.equals(that.expr); }
 
   greaterThan(that) { return this.expr.greaterThan(that.squared()); }
 }
