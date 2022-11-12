@@ -7,10 +7,17 @@ function assert(test, message) {
 }
 
 function assert_equal(actual, expected) {
-  assert(
+  return assert(
     actual.toString() === expected.toString(),
     "Expected " + actual.toString() + "=" + expected.toString(),
   );
+}
+
+function assert_throws(fn, message) {
+  try { fn(); }
+  catch(err) { return assert_equal(err.message, message); }
+
+  throw new Error("Expected an Error to be thrown");
 }
 
 function test(name, fn) {

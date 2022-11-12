@@ -15,21 +15,37 @@
 "use strict";
 
 module("ConstructibleNumber", () => {
-  test("should add literals", () => {
+  test("should add two literals", () => {
     assert_equal(Literal.ONE.plus(Literal.TWO), 3);
     assert_equal(Literal.TWO.plus(Literal.TWO), 4);
   });
 
-  test("should subtract literals", () => {
+  test("should subtract two literals", () => {
     assert_equal(new Literal(100).minus(new Literal(87)), 13);
   });
 
-  test("should multiply literals", () => {
+  test("should multiply two literals", () => {
     assert_equal(new Literal(6).times(new Literal(7)), 42);
   });
 
+  test("should multiply a literal by a fraction", () => {
+    assert_equal(Literal.THREE.times(Literal.TWO.dividedBy(Literal.THREE)), 2);
+    assert_equal(Literal.THREE.times(Fraction.ONE_HALF), "3/2");
+  });
+
+  test("should multiply a literal by a square root", () => {
+    assert_equal(Literal.THREE.times(SquareRoot.THREE), "√27");
+  });
+
+  test("should fail to divide by zero", () => {
+    assert_throws(
+      () => Literal.THREE.dividedBy(Literal.ZERO),
+      "Cannot divide by zero",
+    );
+  });
+
   test("should return a literal when dividing by one", () => {
-    assert_equal(new Literal(42).dividedBy(new Literal(1)), 42);
+    assert_equal(new Literal(42).dividedBy(Literal.ONE), 42);
   });
 
   test("should reduce a literal when it is divisible", () => {
@@ -57,10 +73,43 @@ module("ConstructibleNumber", () => {
     assert_equal(new Literal(65537).squareRoot(), "√65537");
   });
 
-  test("should multiply irreducible square roots", () => {
+  test("should compare two literals");
+
+  test("should compare a literal with a fraction");
+
+  test("should compare a literal with a square root");
+
+  test("should square a fraction");
+
+  test("should square root a fraction");
+
+  test("should compare a fraction with a literal");
+
+  test("should compare a fraction with a fraction");
+
+  test("should compare a fraction with a square root");
+
+  test("should multiply a square root by a literal", () => {
     assert_equal(SquareRoot.THREE.times(Literal.THREE), "√27");
-    assert_equal(Literal.THREE.times(SquareRoot.THREE), "√27");
   });
+
+  test("should multiply a square root by a fraction");
+
+  test("should multiple a square root by a square root");
+
+  test("should square a square root", () => {
+    assert_equal(SquareRoot.THREE.squared(), 3);
+  });
+
+  test("should square root a square root", () => {
+    assert_equal(SquareRoot.TWO.squareRoot(), "√√2");
+  });
+
+  test("should compare a square root to a literal");
+
+  test("should compare a square root to a fraction");
+
+  test("should compare a square root to a square root");
 });
 
 module("Geometry", () => {

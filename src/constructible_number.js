@@ -136,11 +136,15 @@ class Fraction extends ConstructibleNumber {
 
   squareRoot() { return this.num.squareRoot().dividedBy(this.den.squareRoot()); }
 
+  lessThan(that) { return this.num.lessThan(this.den.times(that)); }
+
   equals(that) {
     return that instanceof Fraction &&
       this.num.equals(that.num) &&
       this.den.equals(that.den);
   }
+
+  greaterThan(that) { return this.num.greaterThan(this.den.times(that)); }
 }
 
 Fraction.ONE_HALF = Object.freeze(Literal.ONE.dividedBy(Literal.TWO));
@@ -157,7 +161,11 @@ class SquareRoot extends ConstructibleNumber {
 
   squared() { return this.expr; }
 
+  lessThan(that) { return this.expr.lessThan(that.squared()); }
+
   equals() { return that instanceof SquareRoot && this.expr.equals(that.expr); }
+
+  greaterThan(that) { return this.expr.greaterThan(that.squared()); }
 }
 
 SquareRoot.TWO = Object.freeze(Literal.TWO.squareRoot());
