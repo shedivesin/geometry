@@ -38,6 +38,18 @@ class ConstructibleNumber {
   squared() { return this.times(this); }
 
   squareRoot() { return new SquareRoot(this); }
+
+  lessThan(that) {
+    throw new RangeError(`Unsupported: ${this.constructor.name}<${that.constructor.name}`);
+  }
+
+  equals(that) {
+    throw new RangeError(`Unsupported: ${this.constructor.name}=${that.constructor.name}`);
+  }
+
+  greaterThan(that) {
+    throw new RangeError(`Unsupported: ${this.constructor.name}>${that.constructor.name}`);
+  }
 }
 
 
@@ -60,7 +72,9 @@ class Literal extends ConstructibleNumber {
 
   times(that) {
     if(that instanceof Literal) { return new Literal(this.value * that.value); }
-    return that.times(this);
+    if(that instanceof Fraction) { return this.times(that.num).dividedBy(that.den); }
+    if(that instanceof SquareRoot) { return this.squared().times(that.expr).squareRoot(); }
+    return super.times(that);
   }
 
   dividedBy(that) {
@@ -86,6 +100,22 @@ class Literal extends ConstructibleNumber {
 
     return super.squareRoot();
   }
+
+  lessThan(that) {
+    if(that instanceof Literal) { return this.value < that.value; }
+    if(that instanceof Fraction) { return this.times(that.den).lessThan(that.num); }
+    if(that instanceof SquareRoot) { return this.squared().lessThan(that.expr); }
+    return super.lessThan(that);
+  }
+
+  equals(that) { return that instanceof Literal && this.value === that.value; }
+
+  greaterThan(that) {
+    if(that instanceof Literal) { return this.value > that.value; }
+    if(that instanceof Fraction) { return this.times(that.den).greaterThan(that.num); }
+    if(that instanceof SquareRoot) { return this.squared().greaterThan(that.expr); }
+    return super.greaterThan(that);
+  }
 }
 
 
@@ -99,6 +129,12 @@ class Fraction extends ConstructibleNumber {
   squared() { return this.num.squared().dividedBy(this.den.squared()); }
 
   squareRoot() { return this.num.squareRoot().dividedBy(this.den.squareRoot()); }
+
+  equals(that) {
+    return that instanceof Fraction &&
+      this.num.equals(that.num) &&
+      this.den.equals(that.den);
+  }
 }
 
 
@@ -112,4 +148,6 @@ class SquareRoot extends ConstructibleNumber {
   times(that) { return this.expr.times(that.squared()).squareRoot(); }
 
   squared() { return this.expr; }
+
+  equals() { return that instanceof SquareRoot && this.expr.equals(that.expr); }
 }
