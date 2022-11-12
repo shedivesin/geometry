@@ -4,6 +4,7 @@
 <style>
 .tbd{color:gray}
 .fail{color:crimson}
+dd{margin-left:5em;text-indent:-2.5em}
 </style>
 <script src=src/constructible_number.js></script>
 <script src=src/geometry.js></script>
@@ -15,6 +16,20 @@
 "use strict";
 
 module("ConstructibleNumber", () => {
+  test("should define helpful constants", () => {
+    assert_equal(Literal.NEGATIVE_ONE, -1);
+    assert_equal(Literal.ZERO, 0);
+    assert_equal(Literal.ONE, 1);
+    assert_equal(Literal.TWO, 2);
+    assert_equal(Literal.THREE, 3);
+    assert_equal(Fraction.ONE_HALF, "1/2");
+    assert_equal(Fraction.ONE_OVER_ROOT_TWO, "1/√2");
+    assert_equal(Fraction.ROOT_TWO_OVER_TWO, "√2/2");
+    assert_equal(Fraction.ROOT_THREE_OVER_TWO, "√3/2");
+    assert_equal(SquareRoot.ROOT_TWO, "√2");
+    assert_equal(SquareRoot.ROOT_THREE, "√3");
+  });
+
   test("should add two literals", () => {
     assert_equal(Literal.ONE.plus(Literal.TWO), 3);
     assert_equal(Literal.TWO.plus(Literal.TWO), 4);
@@ -34,7 +49,7 @@ module("ConstructibleNumber", () => {
   });
 
   test("should multiply a literal by a square root", () => {
-    assert_equal(Literal.THREE.times(SquareRoot.THREE), "√27");
+    assert_equal(Literal.THREE.times(SquareRoot.ROOT_THREE), "√27");
   });
 
   test("should fail to divide by zero", () => {
@@ -90,7 +105,7 @@ module("ConstructibleNumber", () => {
   test("should compare a fraction with a square root");
 
   test("should multiply a square root by a literal", () => {
-    assert_equal(SquareRoot.THREE.times(Literal.THREE), "√27");
+    assert_equal(SquareRoot.ROOT_THREE.times(Literal.THREE), "√27");
   });
 
   test("should multiply a square root by a fraction");
@@ -98,11 +113,11 @@ module("ConstructibleNumber", () => {
   test("should multiple a square root by a square root");
 
   test("should square a square root", () => {
-    assert_equal(SquareRoot.THREE.squared(), 3);
+    assert_equal(SquareRoot.ROOT_THREE.squared(), 3);
   });
 
   test("should square root a square root", () => {
-    assert_equal(SquareRoot.TWO.squareRoot(), "√√2");
+    assert_equal(SquareRoot.ROOT_TWO.squareRoot(), "√√2");
   });
 
   test("should compare a square root to a literal");
@@ -113,18 +128,48 @@ module("ConstructibleNumber", () => {
 });
 
 module("Geometry", () => {
-  test("should make initial circles", () => {
-    const a = new Point(Literal.ZERO, Literal.ZERO);
-    assert_equal(a, "0,0");
+  test("should calculate the diagonal of a unit square", () => {
+    assert_equal(
+      new Point(Literal.ZERO, Literal.ZERO).
+        distanceTo(new Point(Literal.ONE, Literal.ONE)),
+      "√2"
+    );
+  });
 
-    const b = new Point(Literal.ONE, Literal.ZERO);
-    assert_equal(b, "1,0");
+  test("should calculate Pythagorean triples", () => {
+    assert_equal(
+      new Point(Literal.THREE, Literal.ZERO).
+        distanceTo(new Point(Literal.ZERO, new Literal(4))),
+      5
+    );
+    assert_equal(
+      new Point(new Literal(5), Literal.ZERO).
+        distanceTo(new Point(Literal.ZERO, new Literal(12))),
+      13
+    );
+  });
 
-    const i = a.circleTo(b);
-    assert_equal(i, "0,0,1");
-
-    const ii = b.circleTo(a);
-    assert_equal(ii, "1,0,1");
+  test("should make unit circles", () => {
+    assert_equal(
+      Point.ORIGIN.circleTo(new Point(Literal.ONE, Literal.ZERO)),
+      Circle.UNIT,
+    );
+    assert_equal(
+      Point.ORIGIN.circleTo(new Point(Fraction.ROOT_THREE_OVER_TWO, Fraction.ONE_HALF)),
+      Circle.UNIT,
+    );
+    assert_equal(
+      Point.ORIGIN.circleTo(new Point(SquareRoot.ONE_OVER_ROOT_TWO, SquareRoot.ONE_OVER_ROOT_TWO)),
+      Circle.UNIT,
+    );
+    assert_equal(
+      Point.ORIGIN.circleTo(new Point(Fraction.ONE_HALF, SquareRoot.ROOT_THREE_OVER_TWO)),
+      Circle.UNIT,
+    );
+    assert_equal(
+      Point.ORIGIN.circleTo(new Point(Literal.ZERO, Literal.ONE)),
+      Circle.UNIT,
+    );
   });
 });
 </script>

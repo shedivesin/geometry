@@ -12,8 +12,13 @@ class Point {
   circleTo(that) { return new Circle(this.x, this.y, this.distanceTo(that)); }
 }
 
+Point.ORIGIN = Object.freeze(new Point(Literal.ZERO, Literal.ZERO));
+
+
 class Circle extends Point {
   constructor(x, y, radius) { super(x, y); this.radius = radius; }
 
   toString() { return super.toString() + "," + this.radius.toString(); }
 }
+
+Circle.UNIT = Object.freeze(new Circle(Literal.ZERO, Literal.ZERO, Literal.ONE));

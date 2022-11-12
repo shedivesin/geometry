@@ -31,7 +31,7 @@ function test(name, fn) {
     document.write("<dd class=ok>" + name + " OK</dd>");
   }
   catch(err) {
-    document.write("<dd class=fail>" + name + " FAILED: " + err.message + "</dd>");
+    document.write("<dd class=fail>" + name + " FAILED<br>" + err.name + ": " + err.message + "<br>" + err.stack.replace(/\n/g, "<br>") + "</dd>");
   }
 }
 
@@ -42,6 +42,6 @@ function module(name, fn) {
     fn();
   }
   catch(err) {
-    document.write("<dd class=fail>" + name + " FAILED: " + err.message + "</dd>");
+    document.write("<dd class=fail>" + name + " FAILED<br>" + err.name + ": " + err.message + "<br>" + err.stack.replace(/\n/g, "<br>") + "</dd>");
   }
 }

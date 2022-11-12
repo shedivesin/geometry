@@ -14,16 +14,16 @@ function gcd(a, b) {
 
 class ConstructibleNumber {
   valueOf() {
-    throw new RangeError(`Unsupported: ${this.constructor.name}#valueOf()`);
+    throw new RangeError(this.constructor.name + "#valueOf() is not supported");
   }
 
   toString() {
-    throw new RangeError(`Unsupported: ${this.constructor.name}#toString()`);
+    throw new RangeError(this.constructor.name + "#toString() is not supported");
   }
 
   plus(that) {
     if(that instanceof Literal && that.value === 0) { return this; }
-    throw new RangeError(`Unsupported: ${this.constructor.name}+${that.constructor.name}`);
+    throw new RangeError(this.constructor.name + "+" + that.constructor.name + " is not supported");
   }
 
   minus(that) { return this.plus(that.negate()); }
@@ -31,7 +31,7 @@ class ConstructibleNumber {
   times(that) {
     if(that instanceof Literal && that.value === 0) { return Literal.ZERO; }
     if(that instanceof Literal && that.value === 1) { return this; }
-    throw new RangeError(`Unsupported: ${this.constructor.name}*${that.constructor.name}`);
+    throw new RangeError(this.constructor.name + "*" + that.constructor.name + " is not supported");
   }
 
   dividedBy(that) { return new Fraction(this, that); }
@@ -43,15 +43,15 @@ class ConstructibleNumber {
   squareRoot() { return new SquareRoot(this); }
 
   lessThan(that) {
-    throw new RangeError(`Unsupported: ${this.constructor.name}<${that.constructor.name}`);
+    throw new RangeError(this.constructor.name + "<" + that.constructor.name + " is not supported");
   }
 
   equals(that) {
-    throw new RangeError(`Unsupported: ${this.constructor.name}=${that.constructor.name}`);
+    throw new RangeError(this.constructor.name + "=" + that.constructor.name + " is not supported");
   }
 
   greaterThan(that) {
-    throw new RangeError(`Unsupported: ${this.constructor.name}>${that.constructor.name}`);
+    throw new RangeError(this.constructor.name + ">" + that.constructor.name + " is not supported");
   }
 }
 
@@ -132,12 +132,6 @@ class Literal extends ConstructibleNumber {
   }
 }
 
-Literal.NEGATIVE_ONE = Object.freeze(new Literal(-1));
-Literal.ZERO = Object.freeze(new Literal(0));
-Literal.ONE = Object.freeze(new Literal(1));
-Literal.TWO = Object.freeze(new Literal(2));
-Literal.THREE = Object.freeze(new Literal(3));
-
 
 class Fraction extends ConstructibleNumber {
   constructor(num, den) { super(); this.num = num; this.den = den; }
@@ -171,8 +165,6 @@ class Fraction extends ConstructibleNumber {
   greaterThan(that) { return this.num.greaterThan(this.den.times(that)); }
 }
 
-Fraction.ONE_HALF = Object.freeze(Literal.ONE.dividedBy(Literal.TWO));
-
 
 class SquareRoot extends ConstructibleNumber {
   constructor(expr) { super(); this.expr = expr; }
@@ -192,5 +184,18 @@ class SquareRoot extends ConstructibleNumber {
   greaterThan(that) { return this.expr.greaterThan(that.squared()); }
 }
 
-SquareRoot.TWO = Object.freeze(Literal.TWO.squareRoot());
-SquareRoot.THREE = Object.freeze(Literal.THREE.squareRoot());
+
+Literal.NEGATIVE_ONE = Object.freeze(new Literal(-1));
+Literal.ZERO = Object.freeze(new Literal(0));
+Literal.ONE = Object.freeze(new Literal(1));
+Literal.TWO = Object.freeze(new Literal(2));
+Literal.THREE = Object.freeze(new Literal(3));
+
+Fraction.ONE_HALF = Object.freeze(Literal.ONE.dividedBy(Literal.TWO));
+
+SquareRoot.ROOT_TWO = Object.freeze(Literal.TWO.squareRoot());
+SquareRoot.ROOT_THREE = Object.freeze(Literal.THREE.squareRoot());
+
+Fraction.ONE_OVER_ROOT_TWO = Object.freeze(Literal.ONE.dividedBy(SquareRoot.ROOT_TWO));
+Fraction.ROOT_TWO_OVER_TWO = Object.freeze(SquareRoot.ROOT_TWO.dividedBy(Literal.TWO));
+Fraction.ROOT_THREE_OVER_TWO = Object.freeze(SquareRoot.ROOT_THREE.dividedBy(Literal.TWO));
