@@ -1,6 +1,6 @@
 "use strict";
 
-module("Expression", () => {
+module("ConstructibleNumber", () => {
   test("should add literals", () => {
     assert_equal(new Literal(2).plus(new Literal(2)), 4);
   });
@@ -45,5 +45,21 @@ module("Expression", () => {
   test("it should multiply irreducible square roots", () => {
     assert_equal(new Literal(3).squareRoot().times(new Literal(3)), "√27");
     assert_equal(new Literal(3).times(new Literal(3).squareRoot()), "√27");
+  });
+});
+
+module("Geometry", () => {
+  test("should make initial circles", () => {
+    const a = new Point(new Literal(0), new Literal(0));
+    assert_equal(a, "0,0");
+
+    const b = new Point(new Literal(1), new Literal(0));
+    assert_equal(b, "1,0");
+
+    const i = a.circleTo(b);
+    assert_equal(i, "0,0,1");
+
+    const ii = b.circleTo(a);
+    assert_equal(ii, "1,0,1");
   });
 });

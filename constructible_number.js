@@ -50,7 +50,7 @@ class Literal extends ConstructibleNumber {
 
   plus(that) {
     if(that instanceof Literal) { return new Literal(this.value + that.value); }
-    return that.plus(this);
+    return super.plus(this);
   }
 
   minus(that) {
