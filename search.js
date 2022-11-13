@@ -52,6 +52,7 @@ function hashes(circles) {
   return hashes;
 }
 
+
 // FIXME: Is memory usage better if we use objects (with __proto__ pointers)
 // rather than Maps?
 // FIXME: BFS is incapable of going beyond 6 states. Return to DFS with a
