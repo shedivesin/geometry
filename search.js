@@ -17,6 +17,7 @@ function intersect([ax, ay, ar], [bx, by, br]) {
 }
 
 
+// FIXME: Which of these actually have a useful effect?
 const SQRT1_2 = Math.SQRT1_2;
 const SQRT3_2 = Math.sqrt(3) / 2;
 const ROTATION_MATRICES = [
