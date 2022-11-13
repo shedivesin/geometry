@@ -17,44 +17,25 @@ function intersect([ax, ay, ar], [bx, by, br]) {
 }
 
 
-// FIXME: Which of these actually have a useful effect?
-const SQRT1_2 = Math.SQRT1_2;
 const SQRT3_2 = Math.sqrt(3) / 2;
 const ROTATION_MATRICES = [
   [+1, 0, 0, +1],
   [-1, 0, 0, +1],
   [+1, 0, 0, -1],
   [-1, 0, 0, -1],
-  [+SQRT3_2, -0.5, +0.5, +SQRT3_2],
-  [-SQRT3_2, -0.5, -0.5, +SQRT3_2],
-  [+SQRT3_2, +0.5, +0.5, -SQRT3_2],
-  [-SQRT3_2, +0.5, -0.5, -SQRT3_2],
-  [+SQRT1_2, -SQRT1_2, +SQRT1_2, +SQRT1_2],
-  [-SQRT1_2, -SQRT1_2, -SQRT1_2, +SQRT1_2],
-  [+SQRT1_2, +SQRT1_2, +SQRT1_2, -SQRT1_2],
-  [-SQRT1_2, +SQRT1_2, -SQRT1_2, -SQRT1_2],
   [+0.5, -SQRT3_2, +SQRT3_2, +0.5],
   [-0.5, -SQRT3_2, -SQRT3_2, +0.5],
   [+0.5, +SQRT3_2, +SQRT3_2, -0.5],
   [-0.5, +SQRT3_2, -SQRT3_2, -0.5],
-  [0, -1, +1, 0],
-  [0, -1, -1, 0],
-  [0, +1, +1, 0],
-  [0, +1, -1, 0],
   [-0.5, -SQRT3_2, +SQRT3_2, -0.5],
   [+0.5, -SQRT3_2, -SQRT3_2, -0.5],
   [-0.5, +SQRT3_2, +SQRT3_2, +0.5],
   [+0.5, +SQRT3_2, -SQRT3_2, +0.5],
-  [-SQRT1_2, -SQRT1_2, +SQRT1_2, -SQRT1_2],
-  [+SQRT1_2, -SQRT1_2, -SQRT1_2, -SQRT1_2],
-  [-SQRT1_2, +SQRT1_2, +SQRT1_2, +SQRT1_2],
-  [+SQRT1_2, +SQRT1_2, -SQRT1_2, +SQRT1_2],
-  [-SQRT3_2, -0.5, +0.5, -SQRT3_2],
-  [+SQRT3_2, -0.5, -0.5, -SQRT3_2],
-  [-SQRT3_2, +0.5, +0.5, +SQRT3_2],
-  [+SQRT3_2, +0.5, -0.5, +SQRT3_2],
 ];
 
+// FIXME: Since rounding basically turns the floats into int32s, and since
+// Javascript strings are 16-bit characters, perhaps we can simply turn a
+// circle into a 6-character string?
 function round(x) { return Math.round(x * 1e8) / 1e8; }
 function str(obj) { return obj.map(round).toString(); }
 
@@ -63,6 +44,7 @@ function comparator([ax, ay, ar], [bx, by, br]) {
 }
 
 function hashes(circles) {
+  // FIXME: Instead of returning all of these, just find the minimum one.
   const hashes = new Set();
 
   const n = circles.length;
@@ -79,6 +61,8 @@ function hashes(circles) {
         q[2] = round(p[2]);
       }
 
+      // FIXME: It might be better to stringify each of these and then sort
+      // the strings, rather than to sort the raw values and THEN stringify.
       hashes.add(temp.sort(comparator).join(";"));
     }
   }
