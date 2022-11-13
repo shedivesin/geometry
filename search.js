@@ -17,8 +17,42 @@ function intersect([ax, ay, ar], [bx, by, br]) {
 }
 
 
-// FIXME: Ditch the reflections array, we can simply use two for loops.
-const REFLECTIONS = [[+1, +1], [-1, +1], [+1, -1], [-1, -1]];
+const SQRT1_2 = Math.SQRT1_2;
+const SQRT3_2 = Math.sqrt(3) / 2;
+const ROTATION_MATRICES = [
+  [+1, 0, 0, +1],
+  [-1, 0, 0, +1],
+  [+1, 0, 0, -1],
+  [-1, 0, 0, -1],
+  [+SQRT3_2, -0.5, +0.5, +SQRT3_2],
+  [-SQRT3_2, -0.5, -0.5, +SQRT3_2],
+  [+SQRT3_2, +0.5, +0.5, -SQRT3_2],
+  [-SQRT3_2, +0.5, -0.5, -SQRT3_2],
+  [+SQRT1_2, -SQRT1_2, +SQRT1_2, +SQRT1_2],
+  [-SQRT1_2, -SQRT1_2, -SQRT1_2, +SQRT1_2],
+  [+SQRT1_2, +SQRT1_2, +SQRT1_2, -SQRT1_2],
+  [-SQRT1_2, +SQRT1_2, -SQRT1_2, -SQRT1_2],
+  [+0.5, -SQRT3_2, +SQRT3_2, +0.5],
+  [-0.5, -SQRT3_2, -SQRT3_2, +0.5],
+  [+0.5, +SQRT3_2, +SQRT3_2, -0.5],
+  [-0.5, +SQRT3_2, -SQRT3_2, -0.5],
+  [0, -1, +1, 0],
+  [0, -1, -1, 0],
+  [0, +1, +1, 0],
+  [0, +1, -1, 0],
+  [-0.5, -SQRT3_2, +SQRT3_2, -0.5],
+  [+0.5, -SQRT3_2, -SQRT3_2, -0.5],
+  [-0.5, +SQRT3_2, +SQRT3_2, +0.5],
+  [+0.5, +SQRT3_2, -SQRT3_2, +0.5],
+  [-SQRT1_2, -SQRT1_2, +SQRT1_2, -SQRT1_2],
+  [+SQRT1_2, -SQRT1_2, -SQRT1_2, -SQRT1_2],
+  [-SQRT1_2, +SQRT1_2, +SQRT1_2, +SQRT1_2],
+  [+SQRT1_2, +SQRT1_2, -SQRT1_2, +SQRT1_2],
+  [-SQRT3_2, -0.5, +0.5, -SQRT3_2],
+  [+SQRT3_2, -0.5, -0.5, -SQRT3_2],
+  [-SQRT3_2, +0.5, +0.5, +SQRT3_2],
+  [+SQRT3_2, +0.5, -0.5, +SQRT3_2],
+];
 
 function round(x) { return Math.round(x * 1e8) / 1e8; }
 function str(obj) { return obj.map(round).toString(); }
@@ -28,28 +62,27 @@ function comparator([ax, ay, ar], [bx, by, br]) {
 }
 
 function hashes(circles) {
-  const m = REFLECTIONS.length;
-  const hashes = new Array(m);
+  const hashes = new Set();
 
   const n = circles.length;
   const temp = new Array(n);
   for(let i = 0; i < n; i++) { temp[i] = [0, 0, 0]; }
 
-  for(let i = 0; i < m; i++) {
-    const [a, b] = REFLECTIONS[i];
+  for(const c of circles) {
+    for(const m of ROTATION_MATRICES) {
+      for(let j = 0; j < n; j++) {
+        const p = circles[j];
+        const q = temp[j];
+        q[0] = round((p[0] - c[0]) * m[0] + (p[1] - c[1]) * m[1]);
+        q[1] = round((p[0] - c[0]) * m[2] + (p[1] - c[1]) * m[3]);
+        q[2] = round(p[2]);
+      }
 
-    for(let j = 0; j < n; j++) {
-      const p = circles[j];
-      const q = temp[j];
-      q[0] = round(p[0] * a);
-      q[1] = round(p[1] * b);
-      q[2] = round(p[2]);
+      hashes.add(temp.sort(comparator).join(";"));
     }
-
-    hashes[i] = temp.sort(comparator).join(";");
   }
 
-  return hashes;
+  return Array.from(hashes);
 }
 
 
@@ -60,8 +93,8 @@ function hashes(circles) {
 function search(max_depth) {
   const start = Date.now();
 
-  const a = [-0.5, 0];
-  const b = [+0.5, 0];
+  const a = [0, 0];
+  const b = [1, 0];
   const open = [[new Map(), new Map().set(str(a), a).set(str(b), b)]];
   const closed = new Set().add("");
 
