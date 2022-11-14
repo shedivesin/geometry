@@ -44,8 +44,7 @@ function comparator([ax, ay, ar], [bx, by, br]) {
 }
 
 function hashes(circles) {
-  // FIXME: Instead of returning all of these, just find the minimum one.
-  const hashes = new Set();
+  let best;
 
   const n = circles.length;
   const temp = new Array(n);
@@ -63,11 +62,12 @@ function hashes(circles) {
 
       // FIXME: It might be better to stringify each of these and then sort
       // the strings, rather than to sort the raw values and THEN stringify.
-      hashes.add(temp.sort(comparator).join(";"));
+      const hash = temp.sort(comparator).join(";");
+      if(best === undefined || hash.localeCompare(best) < 0) { best = hash; }
     }
   }
 
-  return Array.from(hashes);
+  return best;
 }
 
 
@@ -90,7 +90,7 @@ function search(max_depth) {
     if(circles.size >= max_depth) { continue; }
 
     for(const a of points.values()) {
-      points: for(const b of points.values()) {
+      for(const b of points.values()) {
         if(a === b) { continue; }
 
         const circle = [a[0], a[1], Math.hypot(b[0] - a[0], b[1] - a[1])];
@@ -98,10 +98,9 @@ function search(max_depth) {
         if(circles.has(key)) { continue; }
 
         const new_circles = new Map(circles).set(key, circle);
-        const keys = hashes(Array.from(new_circles.values()));
-        for(const key of keys) { if(closed.has(key)) { continue points; } }
-
-        closed.add(keys[0]);
+        const key2 = hashes(Array.from(new_circles.values()));
+        if(closed.has(key2)) { continue; }
+        closed.add(key2);
 
         const new_points = new Map(points);
         for(const other of circles.values()) {
