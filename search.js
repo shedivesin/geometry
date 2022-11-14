@@ -17,6 +17,8 @@ function intersect([ax, ay, ar], [bx, by, br]) {
 }
 
 
+// FIXME: Instead of using a fixed set of rotation matrices, why not pick
+// points and transform everything such that the second point is at 1,0.
 const SQRT3_2 = Math.sqrt(3) / 2;
 const ROTATION_MATRICES = [
   [+1, 0, 0, +1],
