@@ -39,10 +39,6 @@ const ROTATION_MATRICES = [
 function round(x) { return Math.round(x * 1e8) / 1e8; }
 function str(obj) { return obj.map(round).toString(); }
 
-function comparator([ax, ay, ar], [bx, by, br]) {
-  return (ax - bx) || (ay - by) || (ar - br);
-}
-
 function hashes(circles) {
   let best;
 
@@ -54,15 +50,13 @@ function hashes(circles) {
     for(const m of ROTATION_MATRICES) {
       for(let j = 0; j < n; j++) {
         const p = circles[j];
-        const q = temp[j];
-        q[0] = round((p[0] - c[0]) * m[0] + (p[1] - c[1]) * m[1]);
-        q[1] = round((p[0] - c[0]) * m[2] + (p[1] - c[1]) * m[3]);
-        q[2] = round(p[2]);
+        const x = round((p[0] - c[0]) * m[0] + (p[1] - c[1]) * m[1]);
+        const y = round((p[0] - c[0]) * m[2] + (p[1] - c[1]) * m[3]);
+        const r = round(p[2]);
+        temp[j] = x + "," + y + "," + r;
       }
 
-      // FIXME: It might be better to stringify each of these and then sort
-      // the strings, rather than to sort the raw values and THEN stringify.
-      const hash = temp.sort(comparator).join(";");
+      const hash = temp.sort().join(";");
       if(best === undefined || hash.localeCompare(best) < 0) { best = hash; }
     }
   }
