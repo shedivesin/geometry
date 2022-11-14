@@ -44,7 +44,6 @@ function hashes(circles) {
 
   const n = circles.length;
   const temp = new Array(n);
-  for(let i = 0; i < n; i++) { temp[i] = [0, 0, 0]; }
 
   for(const c of circles) {
     for(const m of ROTATION_MATRICES) {
