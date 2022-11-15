@@ -74,9 +74,6 @@ function canonical_hash(list) {
   let best;
 
   for(let a = list; a; a = a[3]) {
-    // FIXME: Is it worth including untransformed (but translated) variants
-    // for each single point?
-
     for(let b = list; b; b = b[3]) {
       if(a === b) { continue; }
 
@@ -123,8 +120,7 @@ function search(depth) {
     for(const p of intersection_points(next)) {
       for(const q of intersection_points(next)) {
         const r = distance(p, q);
-        if(round(r) === 0) { continue; }
-        if(contains(next, str(p[0], p[1], r))) { continue; }
+        if(round(r) === 0 || contains(next, str(p[0], p[1], r))) { continue; }
 
         open.push([p[0], p[1], r, next]);
       }
