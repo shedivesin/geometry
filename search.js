@@ -12,9 +12,7 @@ function intersect(p, q) {
   if(d > p[2] + q[2] || d < Math.abs(p[2] - q[2])) { return []; }
 
   const a = (p[2] * p[2] - q[2] * q[2] + d * d) / (2 * d);
-  if(a >= p[2]) {
-    return [[p[0] + (q[0] - p[0]) * (a / d), p[1] + (q[1] - p[1]) * (a / d)]];
-  }
+  if(a >= p[2]) { return []; }
 
   const h = Math.sqrt(p[2] * p[2] - a * a);
   return [
@@ -35,7 +33,8 @@ function* intersection_points(list) {
 
   for(let a = list; a; a = a[3]) {
     for(let b = a[3]; b; b = b[3]) {
-      yield* intersect(a, b);
+      const points = intersect(a, b);
+      yield* points;
     }
   }
 }
@@ -147,3 +146,4 @@ search(3);
 search(4);
 search(5);
 search(6);
+search(7);
