@@ -105,25 +105,30 @@ function contains(list, x) {
 
 function search(depth) {
   const start = Date.now();
+  const open = [];
   // FIXME: A bloom filter would be much more space-efficient.
   const closed = new Set();
 
-  for(const open = [null]; open.length; ) {
-    const next = open.shift();
+  open.push(null);
+  closed.add(canonical_hash(null));
 
-    const hash = canonical_hash(next);
-    if(closed.has(hash)) { continue; }
-    closed.add(hash);
+  while(open.length) {
+    const curr = open.shift();
 
     // FIXME: We could cache length on each node, making this step O(1).
-    if(len(next) >= depth) { continue; }
+    if(len(curr) >= depth) { continue; }
 
-    for(const p of intersection_points(next)) {
-      for(const q of intersection_points(next)) {
+    for(const p of intersection_points(curr)) {
+      for(const q of intersection_points(curr)) {
         const r = distance(p, q);
-        if(round(r) === 0 || contains(next, str(p[0], p[1], r))) { continue; }
+        if(round(r) === 0 || contains(curr, str(p[0], p[1], r))) { continue; }
 
-        open.push([p[0], p[1], r, next]);
+        const next = [p[0], p[1], r, curr];
+        const hash = canonical_hash(next);
+        if(closed.has(hash)) { continue; }
+
+        open.push(next);
+        closed.add(hash);
       }
     }
   }
