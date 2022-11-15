@@ -7,24 +7,25 @@ function distance(a, b) {
 }
 
 // http://paulbourke.net/geometry/circlesphere/
-function* intersect(p, q) {
+function intersect(p, q) {
   const d = distance(p, q);
-  if(d > p[2] + q[2] || d < Math.abs(p[2] - q[2])) { return; }
+  if(d > p[2] + q[2] || d < Math.abs(p[2] - q[2])) { return []; }
 
   const a = (p[2] * p[2] - q[2] * q[2] + d * d) / (2 * d);
   if(a >= p[2]) {
-    yield [p[0] + (q[0] - p[0]) * (a / d), p[1] + (q[1] - p[1]) * (a / d)];
-    return;
+    return [[p[0] + (q[0] - p[0]) * (a / d), p[1] + (q[1] - p[1]) * (a / d)]];
   }
 
   const h = Math.sqrt(p[2] * p[2] - a * a);
-  yield [
-    p[0] + (q[0] - p[0]) * (a / d) - (q[1] - p[1]) * (h / d),
-    p[1] + (q[1] - p[1]) * (a / d) + (q[0] - p[0]) * (h / d),
-  ];
-  yield [
-    p[0] + (q[0] - p[0]) * (a / d) + (q[1] - p[1]) * (h / d),
-    p[1] + (q[1] - p[1]) * (a / d) - (q[0] - p[0]) * (h / d),
+  return [
+    [
+      p[0] + (q[0] - p[0]) * (a / d) - (q[1] - p[1]) * (h / d),
+      p[1] + (q[1] - p[1]) * (a / d) + (q[0] - p[0]) * (h / d),
+    ],
+    [
+      p[0] + (q[0] - p[0]) * (a / d) + (q[1] - p[1]) * (h / d),
+      p[1] + (q[1] - p[1]) * (a / d) - (q[0] - p[0]) * (h / d),
+    ],
   ];
 }
 
