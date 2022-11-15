@@ -1,113 +1,133 @@
+"use strict";
+
+// ## GEOMETRY
+
+function distance(a, b) {
+  return Math.hypot(b[0] - a[0], b[1] - a[1]);
+}
+
 // http://paulbourke.net/geometry/circlesphere/
-function intersect([ax, ay, ar], [bx, by, br]) {
-  bx -= ax;
-  by -= ay;
+function* intersect(p, q) {
+  const d = distance(p, q);
+  if(d > p[2] + q[2] || d < Math.abs(p[2] - q[2])) { return; }
 
-  const d = Math.hypot(bx, by);
-  if(d > ar + br || d < Math.abs(ar - br)) { return []; }
+  const a = (p[2] * p[2] - q[2] * q[2] + d * d) / (2 * d);
+  if(a >= p[2]) {
+    yield [p[0] + (q[0] - p[0]) * (a / d), p[1] + (q[1] - p[1]) * (a / d)];
+    return;
+  }
 
-  const x = (ar * ar - br * br + d * d) / (2 * d);
-  if(x >= ar) { return [[(ax * d + bx * x) / d, (ay * d + by * x) / d]]; }
-
-  const y = Math.sqrt(ar * ar - x * x);
-  return [
-    [(ax * d + bx * x - by * y) / d, (ay * d + by * x + bx * y) / d],
-    [(ax * d + bx * x + by * y) / d, (ay * d + by * x - bx * y) / d],
+  const h = Math.sqrt(p[2] * p[2] - a * a);
+  yield [
+    p[0] + (q[0] - p[0]) * (a / d) - (q[1] - p[1]) * (h / d),
+    p[1] + (q[1] - p[1]) * (a / d) + (q[0] - p[0]) * (h / d),
+  ];
+  yield [
+    p[0] + (q[0] - p[0]) * (a / d) + (q[1] - p[1]) * (h / d),
+    p[1] + (q[1] - p[1]) * (a / d) - (q[0] - p[0]) * (h / d),
   ];
 }
 
+function* intersection_points(list) {
+  yield [0, 0];
+  yield [1, 0];
 
-// FIXME: Instead of using a fixed set of rotation matrices, why not pick
-// points and transform everything such that the second point is at 1,0.
-const SQRT3_2 = Math.sqrt(3) / 2;
-const ROTATION_MATRICES = [
-  [+1, 0, 0, +1],
-  [-1, 0, 0, +1],
-  [+1, 0, 0, -1],
-  [-1, 0, 0, -1],
-  [+0.5, -SQRT3_2, +SQRT3_2, +0.5],
-  [-0.5, -SQRT3_2, -SQRT3_2, +0.5],
-  [+0.5, +SQRT3_2, +SQRT3_2, -0.5],
-  [-0.5, +SQRT3_2, -SQRT3_2, -0.5],
-  [-0.5, -SQRT3_2, +SQRT3_2, -0.5],
-  [+0.5, -SQRT3_2, -SQRT3_2, -0.5],
-  [-0.5, +SQRT3_2, +SQRT3_2, +0.5],
-  [+0.5, +SQRT3_2, -SQRT3_2, +0.5],
-];
+  for(let a = list; a; a = a[3]) {
+    for(let b = a[3]; b; b = b[3]) {
+      yield* intersect(a, b);
+    }
+  }
+}
 
-// FIXME: Since rounding basically turns the floats into int32s, and since
-// Javascript strings are 16-bit characters, perhaps we can simply turn a
-// circle into a 6-character string?
-function round(x) { return Math.round(x * 1e8) / 1e8; }
-function str(obj) { return obj.map(round).toString(); }
+function len(list) {
+  let n = 0;
+  for(let a = list; a; a = a[3]) { n++; }
+  return n;
+}
 
-function hashes(circles) {
+function round(x) {
+  return Math.round(x * 1e8) / 1e8;
+}
+
+// FIXME: I'm certain we can do a lot better here...
+function str(x, y, r) {
+  return round(x) + "," + round(y) + "," + round(r);
+}
+
+function hash(list, o, m00, m10, m01, m11) {
+  const strs = [];
+
+  for(let a = list; a; a = a[3]) {
+    const x = a[0] - o[0];
+    const y = a[1] - o[1];
+    const r = a[2];
+    strs.push(str(x * m00 + y * m10, x * m01 + y * m11, r));
+  }
+
+  return strs.sort().join(";");
+}
+
+function canonical_hash(list) {
+  if(!list) { return ""; }
+  if(!list[3]) { return hash(list, list, 1, 0, 0, 1); }
+
   let best;
 
-  const n = circles.length;
-  const temp = new Array(n);
+  for(let a = list; a; a = a[3]) {
+    // FIXME: Is it worth including untransformed (but translated) variants
+    // for each single point?
 
-  for(const c of circles) {
-    for(const m of ROTATION_MATRICES) {
-      for(let j = 0; j < n; j++) {
-        const p = circles[j];
-        const x = round((p[0] - c[0]) * m[0] + (p[1] - c[1]) * m[1]);
-        const y = round((p[0] - c[0]) * m[2] + (p[1] - c[1]) * m[3]);
-        const r = round(p[2]);
-        temp[j] = x + "," + y + "," + r;
-      }
+    for(let b = list; b; b = b[3]) {
+      if(a === b) { continue; }
 
-      const hash = temp.sort().join(";");
-      if(best === undefined || hash.localeCompare(best) < 0) { best = hash; }
+      const d = distance(a, b);
+      const cos = (b[0] - a[0]) / d;
+      const sin = (a[1] - b[1]) / d;
+
+      const g = hash(list, a, cos, -sin, sin, cos);
+      if(g.localeCompare(best) < 0) { best = g; }
+
+      // FIXME: Is the vertical flip necessary?
+      const h = hash(list, a, cos, -sin, -sin, -cos);
+      if(h.localeCompare(best) < 0) { best = h; }
     }
   }
 
   return best;
 }
 
+function contains(list, x) {
+  for(let a = list; a; a = a[3]) {
+    if(str(a[0], a[1], a[2]) === x) {
+      return true;
+    }
+  }
 
-// FIXME: Is memory usage better if we use objects (with __proto__ pointers)
-// rather than Maps?
-// FIXME: BFS is incapable of going beyond 6 states. Return to DFS with a
-// depth cap.
-function search(max_depth) {
+  return false;
+}
+
+function search(depth) {
   const start = Date.now();
+  // FIXME: A bloom filter would be much more space-efficient.
+  const closed = new Set();
 
-  const a = [0, 0];
-  const b = [1, 0];
-  const open = [[new Map(), new Map().set(str(a), a).set(str(b), b)]];
-  const closed = new Set().add("");
+  for(const open = [null]; open.length; ) {
+    const next = open.shift();
 
-  while(open.length >= 1) {
-    const [circles, points] = open.shift();
-    // console.log(Array.from(circles.values()));
+    const hash = canonical_hash(next);
+    if(closed.has(hash)) { continue; }
+    closed.add(hash);
 
-    if(circles.size >= max_depth) { continue; }
+    // FIXME: We could cache length on each node, making this step O(1).
+    if(len(next) >= depth) { continue; }
 
-    for(const a of points.values()) {
-      for(const b of points.values()) {
-        if(a === b) { continue; }
+    for(const p of intersection_points(next)) {
+      for(const q of intersection_points(next)) {
+        const r = distance(p, q);
+        if(round(r) === 0) { continue; }
+        if(contains(next, str(p[0], p[1], r))) { continue; }
 
-        const circle = [a[0], a[1], Math.hypot(b[0] - a[0], b[1] - a[1])];
-        const key = str(circle);
-        if(circles.has(key)) { continue; }
-
-        const new_circles = new Map(circles).set(key, circle);
-        const key2 = hashes(Array.from(new_circles.values()));
-        if(closed.has(key2)) { continue; }
-        closed.add(key2);
-
-        const new_points = new Map(points);
-        for(const other of circles.values()) {
-          for(const point of intersect(circle, other)) {
-            const key = str(point);
-            if(new_points.has(key)) { continue; }
-
-            new_points.set(key, point);
-          }
-        }
-
-        open.push([new_circles, new_points]);
+        open.push([p[0], p[1], r, next]);
       }
     }
   }
@@ -119,7 +139,6 @@ function search(max_depth) {
   );
 }
 
-
 search(0);
 search(1);
 search(2);
@@ -127,5 +146,3 @@ search(3);
 search(4);
 search(5);
 search(6);
-search(7);
-//search(8);
