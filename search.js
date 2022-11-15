@@ -85,11 +85,10 @@ function canonical_hash(list) {
       const sin = (a[1] - b[1]) / d;
 
       const g = hash(list, a, cos, -sin, sin, cos);
-      if(g.localeCompare(best) < 0) { best = g; }
+      if(best === undefined || g.localeCompare(best) < 0) { best = g; }
 
-      // FIXME: Is the vertical flip necessary?
       const h = hash(list, a, cos, -sin, -sin, -cos);
-      if(h.localeCompare(best) < 0) { best = h; }
+      if(best === undefined || h.localeCompare(best) < 0) { best = h; }
     }
   }
 
