@@ -163,6 +163,7 @@ function search(test) {
   console.log("Explored %d state(s) in %d ms.", visited.size, end - start);
 }
 
+// Benchmark search speed.
 search(({length}) => length >= 0);
 search(({length}) => length >= 1);
 search(({length}) => length >= 2);
@@ -171,6 +172,7 @@ search(({length}) => length >= 4);
 search(({length}) => length >= 5);
 search(({length}) => length >= 6);
 
+// Napoleon's Problem (inscribe a square in a given circle).
 search((circles, points) => {
   const n = circles.length;
   if(n === 0) { return false; }
