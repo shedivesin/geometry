@@ -70,14 +70,51 @@ function intersect(x1, y1, r1, x2, y2, r2) {
   ];
 }
 
+function hash_construction(circles) {
+  const n = circles.length;
+  if(n === 0) { return ""; }
+  if(n === 1) { return hash3(0, 0, circles[0][2]); }
+
+  const temp = new Array(n);
+  let best;
+
+  for(let i = 0; i < n; i++) {
+    const c1 = circles[i];
+
+    for(let j = 0; j < n; j++) {
+      if(i === j) { continue; }
+
+      const c2 = circles[j];
+      const d = distance(c1[0], c1[1], c2[0], c2[1]);
+      if(!round(d)) { continue; }
+
+      const cos = (c2[0] - c1[0]) / d;
+      const sin = (c1[1] - c2[1]) / d;
+
+      for(let s = 1; s >= -1; s -= 2) {
+        for(let k = 0; k < n; k++) {
+          const c3 = circles[k];
+          const x = c3[0] - c1[0];
+          const y = c3[1] - c1[1];
+          const r = c3[2];
+          temp[k] = hash3(x * cos - y * sin, (x * sin + y * cos) * s, r);
+        }
+
+        const hash = temp.sort().join("");
+        if(best === undefined || hash.localeCompare(best) < 0) { best = hash; }
+      }
+    }
+  }
+
+  return best;
+}
+
 function search_to_depth(test, circles, points, visited, depth) {
   if(circles.length >= depth) { return false; }
 
-  /*
-  const hash = construction_hash(circles);
+  const hash = hash_construction(circles);
   if(visited.has(hash)) { return false; }
   visited.add(hash);
-  */
 
   if(test(circles, points)) { return true; }
 
