@@ -2,7 +2,7 @@
 
 function round(x) { return Math.round(x * 1e8); }
 
-function hash1(x) {
+function hash(x) {
   x = round(x);
   if(!(x >= -2147483648 && x < 2147483648)) {
     throw new RangeError("Number went out of range for hashing");
@@ -16,30 +16,23 @@ function hash1(x) {
   );
 }
 
-function hash2(x, y) { return hash1(x) + hash1(y); }
+function hash3(x, y, z) { return hash(x) + hash(y) + hash(z); }
 
-function hash3(x, y, z) { return hash1(x) + hash1(y) + hash1(z); }
+function hashv(v) {
+  let str = "";
 
-function contains_hash2(points, x2, y2) {
-  const n = points.length;
-  const h2 = hash2(x2, y2);
+  const n = v.length;
+  for(let i = 0; i < n; i++) { str += hash(v[i]); }
 
-  for(let i = 0; i < n; i++) {
-    const p1 = points[i];
-    const h1 = hash2(p1[0], p1[1]);
-    if(h1 === h2) { return true; }
-  }
-
-  return false;
+  return str;
 }
 
-function contains_hash3(circles, x2, y2, r2) {
-  const n = circles.length;
-  const h2 = hash3(x2, y2, r2);
+function contains_hashv(vectors, v2) {
+  const n = vectors.length;
+  const h2 = hashv(v2);
 
   for(let i = 0; i < n; i++) {
-    const c1 = circles[i];
-    const h1 = hash3(c1[0], c1[1], c1[2]);
+    const h1 = hashv(vectors[i]);
     if(h1 === h2) { return true; }
   }
 
@@ -130,14 +123,16 @@ function search_to_depth(test, circles, points, visited, depth) {
 
       const p2 = points[j];
       const r = distance(p1[0], p1[1], p2[0], p2[1]);
-      if(!round(r) || contains_hash3(circles, p1[0], p1[1], r)) { continue; }
+      if(!round(r)) { continue; }
 
-      circles.push([p1[0], p1[1], r]);
+      const c = [p1[0], p1[1], r];
+      if(contains_hashv(circles, c)) { continue; }
 
+      circles.push(c);
       for(let k = 0; k < m; k++) {
         const c1 = circles[k];
         for(const p of intersect(c1[0], c1[1], c1[2], p1[0], p1[1], r)) {
-          if(contains_hash2(points, p[0], p[1])) { continue; }
+          if(contains_hashv(points, p)) { continue; }
           points.push(p);
         }
       }
@@ -175,4 +170,15 @@ search(({length}) => length >= 3);
 search(({length}) => length >= 4);
 search(({length}) => length >= 5);
 search(({length}) => length >= 6);
-//search(({length}) => length >= 7);
+
+search((circles, points) => {
+  const n = circles.length;
+  if(n === 0) { return false; }
+
+  const c = circles[n - 1];
+  if(round(c[2] - Math.SQRT2)) { return false; }
+  if(round(c[0] * c[0] + c[1] * c[1] - 1)) { return false; }
+
+  console.log(circles);
+  return true;
+});
