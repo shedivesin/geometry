@@ -160,6 +160,7 @@ function search(test) {
 
   for(let d = WHEEL_DEPTH;; d++) {
     let done = false;
+
     for(let i = 0; i < n; i++) {
       const wheel = WHEELS[i];
       const cn = wheel.length;
