@@ -90,6 +90,7 @@ function add_intersection_points(n, x1, y1, r1, x2, y2, r2) {
 }
 
 
+// FIXME: Some amount of state deduplication may render the wheel unneccessary.
 // FIXME: Don't include 0, 0, 1, 1, 0, 1 in each wheel, since they're always
 // the same.
 const SQRT3 = Math.sqrt(3);
