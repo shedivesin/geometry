@@ -158,7 +158,8 @@ function search(test) {
   const start = Date.now();
   const n = WHEELS.length;
 
-  for(let d = WHEEL_DEPTH, done = false; !done; d++) {
+  for(let d = WHEEL_DEPTH;; d++) {
+    let done = false;
     for(let i = 0; i < n; i++) {
       const wheel = WHEELS[i];
       const cn = wheel.length;
@@ -190,6 +191,9 @@ function search(test) {
 
       // DFS this wheel.
       done = search_to_depth(test, cn, pn, d * 3) || done;
+    }
+    if(done) {
+      break;
     }
 
     console.log(
