@@ -158,6 +158,11 @@ function search(test) {
   const start = Date.now();
   const n = WHEELS.length;
 
+  points[0] = 0;
+  points[1] = 0;
+  points[2] = 1;
+  points[3] = 0;
+
   for(let d = WHEEL_DEPTH;; d++) {
     let done = false;
 
@@ -166,13 +171,7 @@ function search(test) {
       const cn = wheel.length;
 
       // Initialize given points.
-      // FIXME: Initialize the first couple circles and intersection points
-      // outside the search loop.
-      let pn = 0;
-      points[0] = 0;
-      points[1] = 0;
-      points[2] = 1;
-      points[3] = 0;
+      let pn = 4;
 
       // Copy each circle from the wheel, adding its intersection points.
       // FIXME: Unify this loop with the one above in search_to_depth().
