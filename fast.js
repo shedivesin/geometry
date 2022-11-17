@@ -90,6 +90,23 @@ function add_intersection_points(n, x1, y1, r1, x2, y2, r2) {
 }
 
 
+// FIXME: Don't include 0, 0, 1, 1, 0, 1 in each wheel, since they're always
+// the same.
+const SQRT3 = Math.sqrt(3);
+const WHEEL_DEPTH = 4;
+const WHEELS = [
+  [0, 0, 1, 1, 0, 1, 0.5, -SQRT3/2,     1,  0  ,     0  , SQRT3],
+  [0, 0, 1, 1, 0, 1, 0.5, -SQRT3/2,     1,  0.5, SQRT3/2,     1],
+  [0, 0, 1, 1, 0, 1, 0.5, -SQRT3/2,     1,  0.5, SQRT3/2, SQRT3],
+  [0, 0, 1, 1, 0, 1, 0.5, -SQRT3/2,     1,  0.5, SQRT3/2,     2],
+  [0, 0, 1, 1, 0, 1, 0.5, -SQRT3/2, SQRT3,  0  ,     0  ,     2],
+  [0, 0, 1, 1, 0, 1, 0.5, -SQRT3/2, SQRT3,  0.5, SQRT3/2, SQRT3],
+  [0, 0, 1, 1, 0, 1, 0.5, -SQRT3/2, SQRT3, -1  ,     0  ,     1],
+  [0, 0, 1, 1, 0, 1, 0.5, -SQRT3/2, SQRT3, -1  ,     0  ,     2],
+  [0, 0, 1, 1, 0, 1, 0.5, -SQRT3/2, SQRT3, -1  ,     0  , SQRT3],
+  [0, 0, 1, 1, 0, 1, 0.5, -SQRT3/2, SQRT3, -1  ,     0  ,     3],
+];
+
 function search_to_depth(test, cn, pn, d) {
   // Check to see if this construction is a solution. If it is, we're done!
   if(test(pn)) {
@@ -139,34 +156,42 @@ function search_to_depth(test, cn, pn, d) {
 
 function search(test) {
   const start = Date.now();
-  // NB: While it's possible to start from 0 circles and 2 points, it is more
-  // efficient to start from two circles. This is because my naive search does
-  // not identify duplicate constructions (e.g. identical but for translation,
-  // rotation, mirroring, etc.), and so tries to construct these circles in
-  // multiple ways.
-  // FIXME: It is not difficult to identify all possible constructions up to
-  // some fixed depth (4? 5?). Perhaps we could manually do so and bootstrap
-  // the search. This allows us to reduce the initial branching factor without
-  // needing costly steps in the search itself.
-  let cn = 0;
-  circles[cn++] = 0;
-  circles[cn++] = 0;
-  circles[cn++] = 1;
-  circles[cn++] = 1;
-  circles[cn++] = 0;
-  circles[cn++] = 1;
+  const n = WHEELS.length;
 
-  let pn = 0;
-  points[pn++] = 0;
-  points[pn++] = 0;
-  points[pn++] = 1;
-  points[pn++] = 0;
-  points[pn++] = 0.5;
-  points[pn++] = Math.sqrt(3)/2;
-  points[pn++] = 0.5;
-  points[pn++] = -Math.sqrt(3)/2;
+  for(let d = WHEEL_DEPTH, done = false; !done; d++) {
+    for(let i = 0; i < n; i++) {
+      const wheel = WHEELS[i];
+      const cn = wheel.length;
 
-  for(let d = 2; !search_to_depth(test, cn, pn, d * 3); d++) {
+      // Initialize given points.
+      // FIXME: Initialize the first couple circles and intersection points
+      // outside the search loop.
+      let pn = 0;
+      points[0] = 0;
+      points[1] = 0;
+      points[2] = 1;
+      points[3] = 0;
+
+      // Copy each circle from the wheel, adding its intersection points.
+      // FIXME: Unify this loop with the one above in search_to_depth().
+      for(let j = 0; j < cn; j += 3) {
+        circles[j] = wheel[j];
+        circles[j+1] = wheel[j+1];
+        circles[j+2] = wheel[j+2];
+
+        for(let k = 0; k < j; k += 3) {
+          pn = add_intersection_points(
+            pn,
+            circles[k], circles[k+1], circles[k+2],
+            circles[j], circles[j+1], circles[j+2],
+          );
+        }
+      }
+
+      // DFS this wheel.
+      done = search_to_depth(test, cn, pn, d * 3) || done;
+    }
+
     console.log(
       "No solutions of %d circles (after %d ms).",
       d,
