@@ -64,18 +64,25 @@ function intersect(x1, y1, r1, x2, y2, r2, s) {
 }
 
 function search_to_depth(test, c, cn, p, pn, s, d) {
+  // Check to see if this construction is a solution. If it is, we're done!
   if(test(p, pn)) {
     // FIXME: We want to do a deduplication step in here!
 
-    c.length = cn;
-    console.log("%s", c.join(","));
+    // NB: Since we do not preallocate c to some large size, we can simply log
+    // it directly. (If we did, we would need to slice it to size, here.)
+    console.log("%j", c);
     return true;
   }
 
+  // If we've already searched to our maximum depth, then don't recurse.
   if(cn >= d) {
     return false;
   }
 
+  // For every pair of unique points, draw a circle from the first to the
+  // second. If this is a new circle (e.g. not already in the construction),
+  // then add it (and any new intersection points it makes) to the construction
+  // and continue searching.
   let done = false;
 
   for(let i = 0; i < pn; i += 2) {
@@ -87,10 +94,9 @@ function search_to_depth(test, c, cn, p, pn, s, d) {
       const r = distance(p[i], p[i + 1], p[j], p[j + 1]);
       if(contains3(c, cn, p[i], p[i + 1], r)) { continue; }
 
-      let cn2 = cn;
-      c[cn2++] = p[i];
-      c[cn2++] = p[i + 1];
-      c[cn2++] = r;
+      c[cn] = p[i];
+      c[cn + 1] = p[i + 1];
+      c[cn + 2] = r;
 
       let pn2 = pn;
       for(let k = 0; k < cn; k += 3) {
@@ -104,7 +110,7 @@ function search_to_depth(test, c, cn, p, pn, s, d) {
         }
       }
 
-      done = search_to_depth(test, c, cn2, p, pn2, s, d) || done;
+      done = search_to_depth(test, c, cn + 3, p, pn2, s, d) || done;
     }
   }
 
@@ -115,7 +121,9 @@ function search(test) {
   const c = [];
   const p = [0, 0, 1, 0];
   const s = [NaN, NaN, NaN, NaN];
-  for(let d = 0; !search_to_depth(test, c, 0, p, 4, s, d); d += 3);
+  for(let d = 0; !search_to_depth(test, c, 0, p, 4, s, d * 3); d++) {
+    console.log("No solutions at depth %d", d);
+  }
 }
 
 search((p, pn) => contains2(p, pn, 1, 0) &&
