@@ -63,7 +63,7 @@ function intersect(x1, y1, r1, x2, y2, r2, s) {
   return true;
 }
 
-function search_to_depth(test, c, cn, p, pn, s, d) {
+function search_to_depth(test, c, cn, p, pn, d) {
   // Check to see if this construction is a solution. If it is, we're done!
   if(test(p, pn)) {
     // FIXME: We want to do a deduplication step in here!
@@ -83,6 +83,7 @@ function search_to_depth(test, c, cn, p, pn, s, d) {
   // second. If this is a new circle (e.g. not already in the construction),
   // then add it (and any new intersection points it makes) to the construction
   // and continue searching.
+  const s = [NaN, NaN, NaN, NaN];
   let done = false;
 
   for(let i = 0; i < pn; i += 2) {
@@ -110,7 +111,7 @@ function search_to_depth(test, c, cn, p, pn, s, d) {
         }
       }
 
-      done = search_to_depth(test, c, cn + 3, p, pn2, s, d) || done;
+      done = search_to_depth(test, c, cn + 3, p, pn2, d) || done;
     }
   }
 
@@ -118,15 +119,42 @@ function search_to_depth(test, c, cn, p, pn, s, d) {
 }
 
 function search(test) {
-  const c = [];
-  const p = [0, 0, 1, 0];
-  const s = [NaN, NaN, NaN, NaN];
-  for(let d = 0; !search_to_depth(test, c, 0, p, 4, s, d * 3); d++) {
-    console.log("No solutions at depth %d", d);
+  const start = Date.now();
+  // NB: While it's possible to start from 0 circles and 2 points, it is more
+  // efficient to start from two circles. This is because my naive search does
+  // not identify duplicate constructions (e.g. identical but for translation,
+  // rotation, mirroring, etc.), and so tries to construct these circles in
+  // multiple ways.
+  // FIXME: It is not difficult to identify all possible constructions up to
+  // some fixed depth (4? 5?). Perhaps we could manually do so and bootstrap
+  // the search. This allows us to reduce the initial branching factor without
+  // needing costly steps in the search itself.
+  const c = [
+    0, 0, 1,
+    1, 0, 1,
+  ];
+  const p = [
+    0, 0,
+    1, 0,
+    0.5, Math.sqrt(3)/+2,
+    0.5, Math.sqrt(3)/-2,
+  ];
+  for(let d = 2; !search_to_depth(test, c, 6, p, 8, d * 3); d++) {
+    console.log("No solutions at depth %d (after %d ms).", d, Date.now() - start);
   }
+
+  console.log("All done (after %d ms).", Date.now() - start);
 }
 
-search((p, pn) => contains2(p, pn, 1, 0) &&
-  contains2(p, pn, 0, 1) &&
-  contains2(p, pn, -1, 0) &&
-  contains2(p, pn, 0, -1));
+const a = Math.sqrt(3)/2;
+search((p, pn) =>
+  // NB: No need to check <1,0> and <0.5,±a>, since they always exist.
+  contains2(p, pn,  a, -0.5) &&
+  contains2(p, pn,  a,  0.5) &&
+  contains2(p, pn,  0,  1) &&
+  contains2(p, pn,  0, -1) &&
+  contains2(p, pn, -a, -0.5) &&
+  contains2(p, pn, -a,  0.5) &&
+  contains2(p, pn, -0.5, -a) &&
+  contains2(p, pn, -0.5,  a) &&
+  contains2(p, pn, -1,  0));
