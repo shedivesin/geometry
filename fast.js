@@ -1,21 +1,28 @@
 "use strict";
+
+
 const EPS = 5e-9;
 
-function equal(x, y) {
+function eq(x, y) {
   return Math.abs(y - x) < EPS;
 }
 
-function equal2(x1, y1, x2, y2) {
-  return equal(x1, x2) && equal(y1, y2);
+function eq2(x1, y1, x2, y2) {
+  return eq(x1, x2) && eq(y1, y2);
 }
 
-function equal3(x1, y1, r1, x2, y2, r2) {
-  return equal(x1, x2) && equal(y1, y2) && equal(r1, r2);
+function eq3(x1, y1, r1, x2, y2, r2) {
+  return eq(x1, x2) && eq(y1, y2) && eq(r1, r2);
 }
 
-function contains2(p, pn, x, y) {
-  for(let i = 0; i < pn; i += 2) {
-    if(equal2(p[i], p[i + 1], x, y)) {
+
+// const MAX_CIRCLES = 30;
+// const circles = new Array(MAX_CIRCLES).fill(0);
+const circles = [];
+
+function contains_circle(n, x, y, r) {
+  for(let i = 0; i < n; i += 3) {
+    if(eq3(circles[i], circles[i+1], circles[i+2], x, y, r)) {
       return true;
     }
   }
@@ -23,9 +30,27 @@ function contains2(p, pn, x, y) {
   return false;
 }
 
-function contains3(c, cn, x, y, r) {
-  for(let i = 0; i < cn; i += 3) {
-    if(equal3(c[i], c[i + 1], c[i + 2], x, y, r)) {
+function add_circle(n, x1, y1, x2, y2) {
+  if(eq2(x1, y1, x2, y2)) { return n; }
+
+  const r = Math.hypot(x2 - x1, y2 - y1);
+  if(contains_circle(n, x1, y1, r)) { return n; }
+  // if(n >= MAX_CIRCLES) { throw new Error("MAX_CIRCLES not big enough"); }
+
+  circles[n++] = x1;
+  circles[n++] = y1;
+  circles[n++] = r;
+  return n;
+}
+
+
+// const MAX_POINTS = 10000;
+// const points = new Array(MAX_POINTS).fill(0);
+const points = [];
+
+function contains_point(n, x, y) {
+  for(let i = 0; i < n; i += 2) {
+    if(eq2(points[i], points[i+1], x, y)) {
       return true;
     }
   }
@@ -33,21 +58,26 @@ function contains3(c, cn, x, y, r) {
   return false;
 }
 
-function distance(x1, y1, x2, y2) {
-  return Math.hypot(x2 - x1, y2 - y1);
+function add_point(n, x, y) {
+  if(contains_point(n, x, y)) { return n; }
+  // if(n >= MAX_POINTS) { throw new Error("MAX_POINTS not big enough"); }
+
+  points[n++] = x;
+  points[n++] = y;
+  return n;
 }
 
-function intersect(x1, y1, r1, x2, y2, r2, s) {
+function add_intersection_points(n, x1, y1, r1, x2, y2, r2) {
   x2 -= x1;
   y2 -= y1;
 
   const d_sq = x2 * x2 + y2 * y2;
-  if(d_sq >= (r1 + r2) * (r1 + r2)) { return false; }
-  if(d_sq <= (r1 - r2) * (r1 - r2)) { return false; }
+  if(d_sq >= (r1 + r2) * (r1 + r2)) { return n; }
+  if(d_sq <= (r1 - r2) * (r1 - r2)) { return n; }
 
   const a = (r1 * r1 - r2 * r2 + d_sq) / (2 * d_sq);
   const h_sq = r1 * r1 - a * a * d_sq;
-  if(h_sq <= 0) { return false; }
+  if(h_sq <= 0) { return n; }
 
   const h = Math.sqrt(h_sq / d_sq);
 
@@ -56,21 +86,16 @@ function intersect(x1, y1, r1, x2, y2, r2, s) {
   x2 *= h;
   y2 *= h;
 
-  s[0] = x1 - y2;
-  s[1] = y1 + x2;
-  s[2] = x1 + y2;
-  s[3] = y1 - x2;
-  return true;
+  return add_point(add_point(n, x1 - y2, y1 + x2), x1 + y2, y1 - x2);
 }
 
-function search_to_depth(test, c, cn, p, pn, d) {
+
+function search_to_depth(test, cn, pn, d) {
   // Check to see if this construction is a solution. If it is, we're done!
-  if(test(p, pn)) {
+  if(test(pn)) {
     // FIXME: We want to do a deduplication step in here!
 
-    // NB: Since we do not preallocate c to some large size, we can simply log
-    // it directly. (If we did, we would need to slice it to size, here.)
-    console.log("%j", c);
+    console.log("%s", c.slice(0, cn).join(","));
     return true;
   }
 
@@ -83,35 +108,29 @@ function search_to_depth(test, c, cn, p, pn, d) {
   // second. If this is a new circle (e.g. not already in the construction),
   // then add it (and any new intersection points it makes) to the construction
   // and continue searching.
-  const s = [NaN, NaN, NaN, NaN];
   let done = false;
 
   for(let i = 0; i < pn; i += 2) {
     for(let j = 0; j < pn; j += 2) {
       if(i === j) { continue; }
 
-      if(equal2(p[i], p[i + 1], p[j], p[j + 1])) { continue; }
-
-      const r = distance(p[i], p[i + 1], p[j], p[j + 1]);
-      if(contains3(c, cn, p[i], p[i + 1], r)) { continue; }
-
-      c[cn] = p[i];
-      c[cn + 1] = p[i + 1];
-      c[cn + 2] = r;
+      const cn2 = add_circle(
+        cn,
+        points[i], points[i+1],
+        points[j], points[j+1],
+      );
+      if(cn2 === cn) { continue; }
 
       let pn2 = pn;
       for(let k = 0; k < cn; k += 3) {
-        if(!intersect(c[k], c[k + 1], c[k + 2], p[i], p[i + 1], r, s)) { continue; }
-
-        for(let l = 0; l < 4; l += 2) {
-          if(contains2(p, pn2, s[l], s[l + 1])) { continue; }
-
-          p[pn2++] = s[l];
-          p[pn2++] = s[l + 1];
-        }
+        pn2 = add_intersection_points(
+          pn2,
+          circles[k], circles[k+1], circles[k+2],
+          circles[cn], circles[cn+1], circles[cn+2],
+        );
       }
 
-      done = search_to_depth(test, c, cn + 3, p, pn2, d) || done;
+      done = search_to_depth(test, cn2, pn2, d) || done;
     }
   }
 
@@ -129,32 +148,48 @@ function search(test) {
   // some fixed depth (4? 5?). Perhaps we could manually do so and bootstrap
   // the search. This allows us to reduce the initial branching factor without
   // needing costly steps in the search itself.
-  const c = [
-    0, 0, 1,
-    1, 0, 1,
-  ];
-  const p = [
-    0, 0,
-    1, 0,
-    0.5, Math.sqrt(3)/+2,
-    0.5, Math.sqrt(3)/-2,
-  ];
-  for(let d = 2; !search_to_depth(test, c, 6, p, 8, d * 3); d++) {
-    console.log("No solutions at depth %d (after %d ms).", d, Date.now() - start);
+  let cn = 0;
+  circles[cn++] = 0;
+  circles[cn++] = 0;
+  circles[cn++] = 1;
+  circles[cn++] = 1;
+  circles[cn++] = 0;
+  circles[cn++] = 1;
+
+  let pn = 0;
+  points[pn++] = 0;
+  points[pn++] = 0;
+  points[pn++] = 1;
+  points[pn++] = 0;
+  points[pn++] = 0.5;
+  points[pn++] = Math.sqrt(3)/2;
+  points[pn++] = 0.5;
+  points[pn++] = -Math.sqrt(3)/2;
+
+  for(let d = 2; !search_to_depth(test, cn, pn, d * 3); d++) {
+    console.log(
+      "No solutions of %d circles (after %d ms).",
+      d,
+      Date.now() - start,
+    );
   }
 
-  console.log("All done (after %d ms).", Date.now() - start);
+  console.log(
+    "Search complete (after %d ms).",
+    Date.now() - start,
+  );
 }
 
+
 const a = Math.sqrt(3)/2;
-search((p, pn) =>
+search(n =>
   // NB: No need to check <1,0> and <0.5,±a>, since they always exist.
-  contains2(p, pn,  a, -0.5) &&
-  contains2(p, pn,  a,  0.5) &&
-  contains2(p, pn,  0,  1) &&
-  contains2(p, pn,  0, -1) &&
-  contains2(p, pn, -a, -0.5) &&
-  contains2(p, pn, -a,  0.5) &&
-  contains2(p, pn, -0.5, -a) &&
-  contains2(p, pn, -0.5,  a) &&
-  contains2(p, pn, -1,  0));
+  contains_point(n,  a, -0.5) &&
+  contains_point(n,  a,  0.5) &&
+  contains_point(n,  0,  1) &&
+  contains_point(n,  0, -1) &&
+  contains_point(n, -a, -0.5) &&
+  contains_point(n, -a,  0.5) &&
+  contains_point(n, -0.5, -a) &&
+  contains_point(n, -0.5,  a) &&
+  contains_point(n, -1,  0));
