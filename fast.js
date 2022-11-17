@@ -112,7 +112,7 @@ function search_to_depth(test, cn, pn, d) {
   if(test(pn)) {
     // FIXME: We want to do a deduplication step in here!
 
-    console.log("%s", c.slice(0, cn).join(","));
+    console.log("%s", circles.slice(0, cn).join(","));
     return true;
   }
 
