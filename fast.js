@@ -50,10 +50,16 @@ function intersect(x1, y1, r1, x2, y2, r2, s) {
   if(h_sq <= 0) { return false; }
 
   const h = Math.sqrt(h_sq / d_sq);
-  s[0] = x1 + x2 * a - y2 * h;
-  s[1] = y1 + y2 * a + x2 * h;
-  s[2] = x1 + x2 * a + y2 * h;
-  s[3] = y1 + y2 * a - x2 * h;
+
+  x1 += x2 * a;
+  y1 += y2 * a;
+  x2 *= h;
+  y2 *= h;
+
+  s[0] = x1 - y2;
+  s[1] = y1 + x2;
+  s[2] = x1 + y2;
+  s[3] = y1 - x2;
   return true;
 }
 
