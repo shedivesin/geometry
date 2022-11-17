@@ -40,17 +40,16 @@ function distance(x1, y1, x2, y2) {
 function intersect(x1, y1, r1, x2, y2, r2, s) {
   x2 -= x1;
   y2 -= y1;
-  const d = Math.hypot(x2, y2);
-  if(d >= r1 + r2 || d <= Math.abs(r1 - r2)) { return false; }
 
-  const a = (r1 * r1 - r2 * r2 + d * d) / (2 * d);
-  const h_sq = r1 * r1 - a * a;
+  const d_sq = x2 * x2 + y2 * y2;
+  if(d_sq >= (r1 + r2) * (r1 + r2)) { return false; }
+  if(d_sq <= (r1 - r2) * (r1 - r2)) { return false; }
+
+  const a = (r1 * r1 - r2 * r2 + d_sq) / (2 * d_sq);
+  const h_sq = r1 * r1 - a * a * d_sq;
   if(h_sq <= 0) { return false; }
 
-  x2 /= d;
-  y2 /= d;
-  const h = Math.sqrt(h_sq);
-
+  const h = Math.sqrt(h_sq / d_sq);
   s[0] = x1 + x2 * a - y2 * h;
   s[1] = y1 + y2 * a + x2 * h;
   s[2] = x1 + x2 * a + y2 * h;
