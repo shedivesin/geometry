@@ -193,6 +193,7 @@ function search(test) {
       // DFS this wheel.
       done = search_to_depth(test, cn, pn, d * 3) || done;
     }
+
     if(done) {
       break;
     }
