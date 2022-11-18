@@ -89,23 +89,33 @@ function add_intersection_points(n, x1, y1, r1, x2, y2, r2) {
   return add_point(add_point(n, x1 - y2, y1 + x2), x1 + y2, y1 - x2);
 }
 
+function update_points(cn, pn) {
+  for(let i = 0; i < cn; i += 3) {
+    pn = add_intersection_points(
+      pn,
+      circles[i], circles[i+1], circles[i+2],
+      circles[cn], circles[cn+1], circles[cn+2],
+    );
+  }
+
+  return pn;
+}
+
 
 // FIXME: Some amount of state deduplication may render the wheel unneccessary.
-// FIXME: Don't include 0, 0, 1, 1, 0, 1 in each wheel, since they're always
-// the same.
 const SQRT3 = Math.sqrt(3);
 const WHEEL_DEPTH = 4;
 const WHEELS = [
-  [0, 0, 1, 1, 0, 1, 0.5, -SQRT3/2,     1,  0  ,     0  , SQRT3],
-  [0, 0, 1, 1, 0, 1, 0.5, -SQRT3/2,     1,  0.5, SQRT3/2,     1],
-  [0, 0, 1, 1, 0, 1, 0.5, -SQRT3/2,     1,  0.5, SQRT3/2, SQRT3],
-  [0, 0, 1, 1, 0, 1, 0.5, -SQRT3/2,     1,  0.5, SQRT3/2,     2],
-  [0, 0, 1, 1, 0, 1, 0.5, -SQRT3/2, SQRT3,  0  ,     0  ,     2],
-  [0, 0, 1, 1, 0, 1, 0.5, -SQRT3/2, SQRT3,  0.5, SQRT3/2, SQRT3],
-  [0, 0, 1, 1, 0, 1, 0.5, -SQRT3/2, SQRT3, -1  ,     0  ,     1],
-  [0, 0, 1, 1, 0, 1, 0.5, -SQRT3/2, SQRT3, -1  ,     0  ,     2],
-  [0, 0, 1, 1, 0, 1, 0.5, -SQRT3/2, SQRT3, -1  ,     0  , SQRT3],
-  [0, 0, 1, 1, 0, 1, 0.5, -SQRT3/2, SQRT3, -1  ,     0  ,     3],
+  [0.5, -SQRT3/2,     1,  0  ,     0  , SQRT3],
+  [0.5, -SQRT3/2,     1,  0.5, SQRT3/2,     1],
+  [0.5, -SQRT3/2,     1,  0.5, SQRT3/2, SQRT3],
+  [0.5, -SQRT3/2,     1,  0.5, SQRT3/2,     2],
+  [0.5, -SQRT3/2, SQRT3,  0  ,     0  ,     2],
+  [0.5, -SQRT3/2, SQRT3,  0.5, SQRT3/2, SQRT3],
+  [0.5, -SQRT3/2, SQRT3, -1  ,     0  ,     1],
+  [0.5, -SQRT3/2, SQRT3, -1  ,     0  ,     2],
+  [0.5, -SQRT3/2, SQRT3, -1  ,     0  , SQRT3],
+  [0.5, -SQRT3/2, SQRT3, -1  ,     0  ,     3],
 ];
 
 function search_to_depth(test, cn, pn, d) {
@@ -139,16 +149,7 @@ function search_to_depth(test, cn, pn, d) {
       );
       if(cn2 === cn) { continue; }
 
-      let pn2 = pn;
-      for(let k = 0; k < cn; k += 3) {
-        pn2 = add_intersection_points(
-          pn2,
-          circles[k], circles[k+1], circles[k+2],
-          circles[cn], circles[cn+1], circles[cn+2],
-        );
-      }
-
-      done = search_to_depth(test, cn2, pn2, d) || done;
+      done = search_to_depth(test, cn2, update_points(cn, pn), d) || done;
     }
   }
 
@@ -159,35 +160,37 @@ function search(test) {
   const start = Date.now();
   const n = WHEELS.length;
 
+  circles[0] = 0;
+  circles[1] = 0;
+  circles[2] = 1;
+  circles[3] = 1;
+  circles[4] = 0;
+  circles[5] = 1;
   points[0] = 0;
   points[1] = 0;
   points[2] = 1;
   points[3] = 0;
+  points[4] = 0.5;
+  points[5] = SQRT3/2;
+  points[6] = 0.5;
+  points[7] = -SQRT3/2;
 
   for(let d = WHEEL_DEPTH;; d++) {
     let done = false;
 
     for(let i = 0; i < n; i++) {
       const wheel = WHEELS[i];
-      const cn = wheel.length;
-
-      // Initialize given points.
-      let pn = 4;
+      const wn = wheel.length;
 
       // Copy each circle from the wheel, adding its intersection points.
-      // FIXME: Unify this loop with the one above in search_to_depth().
-      for(let j = 0; j < cn; j += 3) {
-        circles[j] = wheel[j];
-        circles[j+1] = wheel[j+1];
-        circles[j+2] = wheel[j+2];
+      let cn = 6;
+      let pn = 8;
+      for(let j = 0; j < wn; cn += 3, j += 3) {
+        circles[cn] = wheel[j];
+        circles[cn+1] = wheel[j+1];
+        circles[cn+2] = wheel[j+2];
 
-        for(let k = 0; k < j; k += 3) {
-          pn = add_intersection_points(
-            pn,
-            circles[k], circles[k+1], circles[k+2],
-            circles[j], circles[j+1], circles[j+2],
-          );
-        }
+        pn = update_points(cn, pn);
       }
 
       // DFS this wheel.
