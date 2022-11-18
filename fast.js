@@ -90,6 +90,8 @@ function add_intersection_points(n, x1, y1, r1, x2, y2, r2) {
 }
 
 function update_points(cn, pn) {
+  cn -= 3;
+
   for(let i = 0; i < cn; i += 3) {
     pn = add_intersection_points(
       pn,
@@ -149,7 +151,7 @@ function search_to_depth(test, cn, pn, d) {
       );
       if(cn2 === cn) { continue; }
 
-      done = search_to_depth(test, cn2, update_points(cn, pn), d) || done;
+      done = search_to_depth(test, cn2, update_points(cn2, pn), d) || done;
     }
   }
 
@@ -185,10 +187,10 @@ function search(test) {
       // Copy each circle from the wheel, adding its intersection points.
       let cn = 6;
       let pn = 8;
-      for(let j = 0; j < wn; cn += 3, j += 3) {
-        circles[cn] = wheel[j];
-        circles[cn+1] = wheel[j+1];
-        circles[cn+2] = wheel[j+2];
+      for(let j = 0; j < wn; j += 3) {
+        circles[cn++] = wheel[j];
+        circles[cn++] = wheel[j+1];
+        circles[cn++] = wheel[j+2];
 
         pn = update_points(cn, pn);
       }
