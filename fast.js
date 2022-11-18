@@ -187,6 +187,7 @@ function search(test) {
       // Copy each circle from the wheel, adding its intersection points.
       let cn = 6;
       let pn = 8;
+
       for(let j = 0; j < wn; j += 3) {
         circles[cn++] = wheel[j];
         circles[cn++] = wheel[j+1];
