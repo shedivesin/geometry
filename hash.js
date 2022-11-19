@@ -117,14 +117,14 @@ function djb2(str) {
   return hash;
 }
 
-function hash_circles_affine(n, m00, m10, m20, m01, m11, m21) {
+function hash_circles_affine(n, x0, y0, m00, m10, m01, m11) {
   let j = 0;
 
   for(let i = 0; i < n; i += 3) {
     hash[j++] =
       ftob(circles[i+2]) +
-      ftob(circles[i] * m00 + circles[i+1] * m10 + m20) +
-      ftob(circles[i] * m01 + circles[i+1] * m11 + m21);
+      ftob((circles[i] - x0) * m00 + (circles[i+1] - y0) * m10) +
+      ftob((circles[i] - x0) * m01 + (circles[i+1] - y0) * m11);
   }
 
   hash.length = j;
@@ -144,27 +144,18 @@ function hash_circles(n) {
 
   let best = 2147483647;
 
-  // FIXME: Instead of iterating over every pair directly, iterate over
-  // unique pairs and simply calculate two hashes from it. This cuts the
-  // number of hypots we do in half.
-  for(let i = 0; i < n; i += 3) {
-    for(let j = 0; j < n; j += 3) {
-      if(i === j) { continue; }
+  for(let i = 3; i < n; i += 3) {
+    for(let j = 0; j < i; j += 3) {
       if(eq2(circles[i], circles[i+1], circles[j], circles[j+1])) { continue; }
 
       const r = Math.hypot(circles[j] - circles[i], circles[j+1] - circles[i+1]);
       const cos = (circles[j] - circles[i]) / r;
       const sin = (circles[j+1] - circles[i+1]) / r;
 
-      const m00 = cos;
-      const m10 = sin;
-      const m20 = -circles[i] * cos - circles[i+1] * sin;
-      const m01 = -sin;
-      const m11 = cos;
-      const m21 = circles[i] * sin - circles[i+1] * cos;
-
-      best = min(hash_circles_affine(n, m00, m10, m20, m01, m11, m21), best);
-      best = min(hash_circles_affine(n, m00, m10, m20, -m01, -m11, -m21), best);
+      best = min(hash_circles_affine(n, circles[i], circles[i+1], cos, sin, -sin, cos), best);
+      best = min(hash_circles_affine(n, circles[i], circles[i+1], cos, sin, sin, -cos), best);
+      best = min(hash_circles_affine(n, circles[j], circles[j+1], -cos, -sin, sin, -cos), best);
+      best = min(hash_circles_affine(n, circles[j], circles[j+1], -cos, -sin, -sin, cos), best);
     }
   }
 
