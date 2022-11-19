@@ -22,3 +22,7 @@ There are (presently) two variants:
 Right now, the latter is significantly faster in practice, but it is believed
 that algorithmic improvements and optimizations will eventually cause the
 former to leapfrog it.
+
+On my machine, `wheels.js` can completely search 8 levels deep in a couple
+minutes. Unfortunately, that is still an order of magnitude to slow to be
+practical for the kinds of constructions I am interested in.
