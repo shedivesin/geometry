@@ -41,7 +41,7 @@ breakthroughs.
 |4      |6      |Known as "Napoleon's problem."|
 |5      |||
 |6      |4      |Trivial.|
-|8      |||
+|8      |≥9||
 |10     |||
 |12     |||
 |15     |||
