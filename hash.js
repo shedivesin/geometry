@@ -89,25 +89,112 @@ function add_intersection_points(n, x1, y1, r1, x2, y2, r2) {
 }
 
 
-// FIXME: Some amount of state deduplication may render wheels unneccessary.
-const SQRT3 = Math.sqrt(3);
-const WHEEL_DEPTH = 4;
-const WHEELS = [
-  [0.5, -SQRT3/2,     1,  0  ,     0  , SQRT3],
-  [0.5, -SQRT3/2,     1,  0.5, SQRT3/2,     1],
-  [0.5, -SQRT3/2,     1,  0.5, SQRT3/2, SQRT3],
-  [0.5, -SQRT3/2,     1,  0.5, SQRT3/2,     2],
-  [0.5, -SQRT3/2, SQRT3,  0  ,     0  ,     2],
-  [0.5, -SQRT3/2, SQRT3,  0.5, SQRT3/2, SQRT3],
-  [0.5, -SQRT3/2, SQRT3, -1  ,     0  ,     1],
-  [0.5, -SQRT3/2, SQRT3, -1  ,     0  ,     2],
-  [0.5, -SQRT3/2, SQRT3, -1  ,     0  , SQRT3],
-  [0.5, -SQRT3/2, SQRT3, -1  ,     0  ,     3],
-];
+// FIXME: Rather than using a Set, perhaps we can just use a large array as
+// a hash table? We're already working with ints, after all...
+const hash = [];
+const visited = new Set();
+
+function ftob(x) {
+  x = Math.round(x * 1e8);
+  // if(!(x >= -2147483648 && x < 2147483648)) { throw new Error("Out of range"); }
+
+  return String.fromCharCode(
+    (x >> 24) & 255,
+    (x >> 16) & 255,
+    (x >>  8) & 255,
+    (x >>  0) & 255,
+  );
+}
+
+function djb2(str) {
+  const n = str.length;
+  let hash = 5381;
+
+  for(let i = 0; i < n; i++) {
+    hash = ((hash << 5) + hash) ^ str.charCodeAt(i);
+  }
+
+  return hash;
+}
+
+function hash_circles_affine(n, m00, m10, m20, m01, m11, m21) {
+  let j = 0;
+
+  for(let i = 0; i < n; i += 3) {
+    hash[j++] =
+      ftob(circles[i+2]) +
+      ftob(circles[i] * m00 + circles[i+1] * m10 + m20) +
+      ftob(circles[i] * m01 + circles[i+1] * m11 + m21);
+  }
+
+  hash.length = j;
+  return djb2(hash.sort().join(""));
+}
+
+function min(a, b) {
+  return (a < b)? a: b;
+}
+
+// FIXME: This is a lot of work: so much so that it significantly slows the
+// search. Do we need to compare EVERY circle to EVERY other one?
+function hash_circles(n) {
+  // NB: This only works at all when n >= 6 (e.g. there are two circles).
+  // This is OK since we initialize the search at that depth, so this function
+  // will never get called with n < 6, but be warned!
+
+  let best = 2147483647;
+
+  // FIXME: Instead of iterating over every pair directly, iterate over
+  // unique pairs and simply calculate two hashes from it. This cuts the
+  // number of hypots we do in half.
+  for(let i = 0; i < n; i += 3) {
+    for(let j = 0; j < n; j += 3) {
+      if(i === j) { continue; }
+      if(eq2(circles[i], circles[i+1], circles[j], circles[j+1])) { continue; }
+
+      const r = Math.hypot(circles[j] - circles[i], circles[j+1] - circles[i+1]);
+      const cos = (circles[j] - circles[i]) / r;
+      const sin = (circles[j+1] - circles[i+1]) / r;
+
+      const m00 = cos;
+      const m10 = sin;
+      const m20 = -circles[i] * cos - circles[i+1] * sin;
+      const m01 = -sin;
+      const m11 = cos;
+      const m21 = circles[i] * sin - circles[i+1] * cos;
+
+      best = min(hash_circles_affine(n, m00, m10, m20, m01, m11, m21), best);
+      best = min(hash_circles_affine(n, m00, m10, m20, -m01, -m11, -m21), best);
+    }
+  }
+
+  return best;
+}
+
+// Return true (and mark the state as visited) if this is a state we've never
+// encountered before. (Return false if we have been here before.)
+// FIXME: This only checks for identical constructions. It should also handle
+// reflections and rotations, etc.
+function visit(n) {
+  const hash = hash_circles(n, 1, 0, 0, 0, 1, 0);
+  if(visited.has(hash)) { return false; }
+
+  visited.add(hash);
+  return true;
+}
+
+// Reset state such that no states are considered visited.
+function clear_visited() {
+  visited.clear();
+}
+
 
 function search_to_depth(test, cn, new_cn, max_cn, pn) {
   // If this state doesn't actually contain any new circles, bail.
   if(cn === new_cn) { return false; }
+
+  // If we've already visited this state, bail.
+  if(!visit(new_cn)) { return false; }
 
   // Add the intersection points made by the newly drawn circles and then
   // call our test function to see if we've found the intersection points
@@ -161,42 +248,29 @@ function search_to_depth(test, cn, new_cn, max_cn, pn) {
 
 function search(test) {
   const start = Date.now();
-  const n = WHEELS.length;
 
-  for(let d = WHEEL_DEPTH; ; d++) {
-    let done = false;
-
-    for(let i = 0; i < n; i++) {
-      const wheel = WHEELS[i];
-      const wn = wheel.length;
-
-      for(let j = 0; j < wn; j += 3) {
-        circles[j+6] = wheel[j];
-        circles[j+7] = wheel[j+1];
-        circles[j+8] = wheel[j+2];
-      }
-
-      done = search_to_depth(test, 0, 6 + wn, d * 3, 4) || done;
-    }
-
-    if(done) {
-      break;
-    }
-
+  for(let d = 2; !search_to_depth(test, 0, 6, d * 3, 4); d++) {
     console.log(
-      "No solutions with %d circles (after %d ms).",
+      "No solutions with %d circles (%d states, %d ms).",
       d,
+      visited.size,
       Date.now() - start,
     );
+
+    clear_visited();
   }
 
   console.log(
-    "Search complete (after %d ms).",
+    "Search complete (%d states, %d ms).",
+    visited.size,
     Date.now() - start,
   );
+
+  clear_visited();
 }
 
 
+const SQRT3 = Math.sqrt(3);
 search(n =>
   // NB: No need to check <1,0> and <1/2,±SQRT3/2>, since they always exist.
   contains_point(n, SQRT3/2, -0.5) &&

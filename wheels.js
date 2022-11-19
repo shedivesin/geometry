@@ -1,192 +1,158 @@
 "use strict";
 
-function round(x) { return Math.round(x * 1e8); }
+const EPS = 5e-9;
 
-const CANONS = [
-  0,
-  0.18350341907227397, // 1-√2/√3
-  0.22871355387816905,
-  0.25,
-  0.27128644612183095,
-  0.4574271077563381,
-  0.5,
-  0.5773502691896257, // 1/√3
-  0.6848186302914435,
-  0.728713553878169,
-  0.75,
-  0.816496580927726,
-  0.8368632931834693,
-  0.8660254037844386, // √3/2
-  0.9682458365518543,
-  0.9734937648862564,
-  1,
-  1.228713553878169,
-  1.271286446121831,
-  1.457427107756338,
-  1.5,
-  1.6583123951777, // √11/2
-  1.7320508075688772, // √3
-  1.816496580927726, // 1+√2/√3
-  1.9915638315627209,
-  2,
-  2.228713553878169,
-  2.598076211353316, // 3√3/2
-  3,
-];
+function eq(x, y) {
+  return Math.abs(y - x) < EPS;
+}
 
-function canon(x) {
-  const s = Math.sign(x);
-  const a = Math.abs(x);
-  for(const c of CANONS) {
-    if(Math.abs(a - c) < 5e-13) {
-      return s * c;
+function eq2(x1, y1, x2, y2) {
+  return eq(x1, x2) && eq(y1, y2);
+}
+
+function eq3(x1, y1, r1, x2, y2, r2) {
+  return eq(x1, x2) && eq(y1, y2) && eq(r1, r2);
+}
+
+
+// const MAX_CIRCLES = 30;
+// const circles = new Array(MAX_CIRCLES).fill(0);
+const circles = [0, 0, 1, 1, 0, 1];
+
+function contains_circle(n, x, y, r) {
+  for(let i = 0; i < n; i += 3) {
+    if(eq3(circles[i], circles[i+1], circles[i+2], x, y, r)) {
+      return true;
     }
-  }
-  throw new Error("Uncanonical number: " + x);
-}
-
-function hash(x) {
-  x = round(x);
-  if(!(x >= -2147483648 && x < 2147483648)) {
-    throw new RangeError("Number went out of range for hashing");
-  }
-
-  return String.fromCharCode(
-    x >>> 24,
-    (x >>> 16) & 255,
-    (x >>> 8) & 255,
-    x & 255,
-  );
-}
-
-function hash3(x, y, z) { return hash(x) + hash(y) + hash(z); }
-
-function hashv(v) {
-  let str = "";
-
-  const n = v.length;
-  for(let i = 0; i < n; i++) { str += hash(v[i]); }
-
-  return str;
-}
-
-function contains_hashv(vectors, v2) {
-  const n = vectors.length;
-  const h2 = hashv(v2);
-
-  for(let i = 0; i < n; i++) {
-    const h1 = hashv(vectors[i]);
-    if(h1 === h2) { return true; }
   }
 
   return false;
 }
 
-function distance(x1, y1, x2, y2) { return Math.hypot(x2 - x1, y2 - y1); }
+function add_circle(n, x1, y1, x2, y2) {
+  if(eq2(x1, y1, x2, y2)) { return n; }
 
-// http://paulbourke.net/geometry/circlesphere/
-function intersect(x1, y1, r1, x2, y2, r2) {
-  const d = Math.hypot(x2 - x1, y2 - y1);
-  if(d >= r1 + r2 || d <= Math.abs(r1 - r2)) { return []; }
+  const r = Math.hypot(x2 - x1, y2 - y1);
+  if(contains_circle(n, x1, y1, r)) { return n; }
+  // if(n >= MAX_CIRCLES) { throw new Error("MAX_CIRCLES not big enough"); }
 
-  const a = (r1 * r1 - r2 * r2 + d * d) / (2 * d);
-  const h_sq = r1 * r1 - a * a;
-  if(h_sq <= 0) { return []; }
-
-  const h = Math.sqrt(r1 * r1 - a * a);
-  const u = (x2 - x1) / d;
-  const v = (y2 - y1) / d;
-
-  try {
-    return [
-      [canon(x1 + u * a - v * h), canon(y1 + v * a + u * h)],
-      [canon(x1 + u * a + v * h), canon(y1 + v * a - u * h)],
-    ];
-  }
-  catch(err) {
-    console.log(x1, y1, r1, x2, y2, r2);
-    throw err;
-  }
+  circles[n++] = x1;
+  circles[n++] = y1;
+  circles[n++] = r;
+  return n;
 }
 
-function hash_construction(circles) {
-  const n = circles.length;
-  if(n === 0) { return ""; }
-  if(n === 1) { return hash3(0, 0, circles[0][2]); }
 
-  const temp = new Array(n);
-  let best;
+// const MAX_POINTS = 10000;
+// const points = new Array(MAX_POINTS).fill(0);
+const points = [0, 0, 1, 0];
 
-  for(let i = 0; i < n; i++) {
-    const c1 = circles[i];
-
-    for(let j = 0; j < n; j++) {
-      if(i === j) { continue; }
-
-      const c2 = circles[j];
-      const d = distance(c1[0], c1[1], c2[0], c2[1]);
-      if(!round(d)) { continue; }
-
-      const cos = (c2[0] - c1[0]) / d;
-      const sin = (c1[1] - c2[1]) / d;
-
-      for(let s = 1; s >= -1; s -= 2) {
-        for(let k = 0; k < n; k++) {
-          const c3 = circles[k];
-          const x = c3[0] - c1[0];
-          const y = c3[1] - c1[1];
-          const r = c3[2];
-          temp[k] = hash3(x * cos - y * sin, (x * sin + y * cos) * s, r);
-        }
-
-        const hash = temp.sort().join("");
-        if(best === undefined || hash.localeCompare(best) < 0) { best = hash; }
-      }
+function contains_point(n, x, y) {
+  for(let i = 0; i < n; i += 2) {
+    if(eq2(points[i], points[i+1], x, y)) {
+      return true;
     }
   }
 
-  return best;
+  return false;
 }
 
-function search_to_depth(test, circles, points, visited, depth) {
-  if(circles.length >= depth) { return false; }
+function add_point(n, x, y) {
+  if(contains_point(n, x, y)) { return n; }
+  // if(n >= MAX_POINTS) { throw new Error("MAX_POINTS not big enough"); }
 
-  const hash = hash_construction(circles);
-  if(visited.has(hash)) { return false; }
-  visited.add(hash);
+  points[n++] = x;
+  points[n++] = y;
+  return n;
+}
 
-  if(test(circles, points)) { return true; }
+function add_intersection_points(n, x1, y1, r1, x2, y2, r2) {
+  x2 -= x1;
+  y2 -= y1;
 
-  const m = circles.length;
-  const n = points.length;
+  const d_sq = x2 * x2 + y2 * y2;
+  if(d_sq >= (r1 + r2) * (r1 + r2)) { return n; }
+  if(d_sq <= (r1 - r2) * (r1 - r2)) { return n; }
+
+  const a = (r1 * r1 - r2 * r2 + d_sq) / (2 * d_sq);
+  const h_sq = r1 * r1 - a * a * d_sq;
+  if(h_sq <= 0) { return n; }
+
+  const h = Math.sqrt(h_sq / d_sq);
+
+  x1 += x2 * a;
+  y1 += y2 * a;
+  x2 *= h;
+  y2 *= h;
+
+  return add_point(add_point(n, x1 - y2, y1 + x2), x1 + y2, y1 - x2);
+}
+
+
+// FIXME: Some amount of state deduplication may render wheels unneccessary.
+const SQRT3 = Math.sqrt(3);
+const WHEEL_DEPTH = 4;
+const WHEELS = [
+  [0.5, -SQRT3/2,     1,  0  ,     0  , SQRT3],
+  [0.5, -SQRT3/2,     1,  0.5, SQRT3/2,     1],
+  [0.5, -SQRT3/2,     1,  0.5, SQRT3/2, SQRT3],
+  [0.5, -SQRT3/2,     1,  0.5, SQRT3/2,     2],
+  [0.5, -SQRT3/2, SQRT3,  0  ,     0  ,     2],
+  [0.5, -SQRT3/2, SQRT3,  0.5, SQRT3/2, SQRT3],
+  [0.5, -SQRT3/2, SQRT3, -1  ,     0  ,     1],
+  [0.5, -SQRT3/2, SQRT3, -1  ,     0  ,     2],
+  [0.5, -SQRT3/2, SQRT3, -1  ,     0  , SQRT3],
+  [0.5, -SQRT3/2, SQRT3, -1  ,     0  ,     3],
+];
+
+function search_to_depth(test, cn, new_cn, max_cn, pn) {
+  // If this state doesn't actually contain any new circles, bail.
+  if(cn === new_cn) { return false; }
+
+  // Add the intersection points made by the newly drawn circles and then
+  // call our test function to see if we've found the intersection points
+  // we're looking for. If so, great, we're done!
+  for(; cn < new_cn; cn += 3) {
+    for(let i = 0; i < cn; i += 3) {
+      pn = add_intersection_points(
+        pn,
+        circles[i], circles[i+1], circles[i+2],
+        circles[cn], circles[cn+1], circles[cn+2],
+      );
+    }
+  }
+
+  if(test(pn)) {
+    console.log("%j", circles.slice(0, cn).join(","));
+    return true;
+  }
+
+  // If we've already searched to our maximum depth, then don't recurse.
+  if(cn >= max_cn) {
+    return false;
+  }
+
+  // For every pair of unique points, draw a circle from the first to the
+  // second. If this is a new circle (e.g. not already in the construction),
+  // then add it (and any new intersection points it makes) to the construction
+  // and continue searching.
   let done = false;
 
-  for(let i = 0; i < n; i++) {
-    const p1 = points[i];
-
-    for(let j = 0; j < n; j++) {
+  for(let i = 0; i < pn; i += 2) {
+    for(let j = 0; j < pn; j += 2) {
       if(i === j) { continue; }
 
-      const p2 = points[j];
-      const r = distance(p1[0], p1[1], p2[0], p2[1]);
-      if(!round(r)) { continue; }
-
-      const c = [p1[0], p1[1], r];
-      if(contains_hashv(circles, c)) { continue; }
-
-      circles.push(c);
-      for(let k = 0; k < m; k++) {
-        const c1 = circles[k];
-        for(const p of intersect(c1[0], c1[1], c1[2], p1[0], p1[1], r)) {
-          if(contains_hashv(points, p)) { continue; }
-          points.push(p);
-        }
-      }
-
-      done = search_to_depth(test, circles, points, visited, depth) || done;
-
-      circles.length = m;
-      points.length = n;
+      done = search_to_depth(
+        test,
+        cn,
+        add_circle(
+          cn,
+          points[i], points[i+1],
+          points[j], points[j+1],
+        ),
+        max_cn,
+        pn,
+      ) || done;
     }
   }
 
@@ -195,25 +161,50 @@ function search_to_depth(test, circles, points, visited, depth) {
 
 function search(test) {
   const start = Date.now();
-  const circles = [];
-  const points = [[0, 0], [1, 0]];
-  const visited = new Set();
+  const n = WHEELS.length;
 
-  for(
-    let depth = 0;
-    !search_to_depth(test, circles, points, visited, depth);
-    visited.clear(), depth++
-  );
+  for(let d = WHEEL_DEPTH; ; d++) {
+    let done = false;
 
-  const end = Date.now();
-  console.log("Explored %d state(s) in %d ms.", visited.size, end - start);
-}
+    for(let i = 0; i < n; i++) {
+      const wheel = WHEELS[i];
+      const wn = wheel.length;
 
-search((circles, points) => {
-  if(circles.length === 5) {
-    console.log(circles);
-    return true;
+      for(let j = 0; j < wn; j += 3) {
+        circles[j+6] = wheel[j];
+        circles[j+7] = wheel[j+1];
+        circles[j+8] = wheel[j+2];
+      }
+
+      done = search_to_depth(test, 0, 6 + wn, d * 3, 4) || done;
+    }
+
+    if(done) {
+      break;
+    }
+
+    console.log(
+      "No solutions with %d circles (after %d ms).",
+      d,
+      Date.now() - start,
+    );
   }
 
-  return false;
-});
+  console.log(
+    "Search complete (after %d ms).",
+    Date.now() - start,
+  );
+}
+
+
+search(n =>
+  // NB: No need to check <1,0> and <1/2,±SQRT3/2>, since they always exist.
+  contains_point(n, SQRT3/2, -0.5) &&
+  contains_point(n, SQRT3/2,  0.5) &&
+  contains_point(n, 0,  1) &&
+  contains_point(n, 0, -1) &&
+  contains_point(n, -SQRT3/2, -0.5) &&
+  contains_point(n, -SQRT3/2,  0.5) &&
+  contains_point(n, -0.5, -SQRT3/2) &&
+  contains_point(n, -0.5,  SQRT3/2) &&
+  contains_point(n, -1, 0));
