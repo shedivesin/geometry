@@ -45,3 +45,9 @@ breakthroughs.
 |10     |||
 |12     |||
 |15     |||
+
+# Special Triangles
+|Triangle|Circles|Notes|
+|--------|-------|-----|
+|3-4-5   |7      ||
+|Kepler's|7      ||
