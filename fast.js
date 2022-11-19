@@ -185,7 +185,9 @@ function search_to_depth(test, cn, new_cn, max_cn, pn) {
   if(cn === new_cn) { return false; }
 
   // If we've already visited this state, bail.
-  if(!visit(new_cn)) { return false; }
+  // NB: However, skip this if we're at the last level of the tree---it doesn't
+  // buy us anything, then.
+  if(new_cn < max_cn && !visit(new_cn)) { return false; }
 
   // Add the intersection points made by the newly drawn circles and then
   // call our test function to see if we've found the intersection points
@@ -242,9 +244,8 @@ function search(test) {
 
   for(let d = 2; !search_to_depth(test, 0, 6, d * 3, 4); d++) {
     console.log(
-      "No solutions with %d circles (%d states, %d ms).",
+      "No solutions with %d circles (after %d ms).",
       d,
-      visited.size,
       Date.now() - start,
     );
 
@@ -252,8 +253,7 @@ function search(test) {
   }
 
   console.log(
-    "Search complete (%d states, %d ms).",
-    visited.size,
+    "Search complete (after %d ms).",
     Date.now() - start,
   );
 
