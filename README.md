@@ -25,7 +25,7 @@ breakthroughs.
 |3    |2      |Given by Euclid ([Elements I 1][])|
 |4    |6      |Same as inscribed in a given circle (see below).|
 |5    |7      |Given by Kurt Hofstetter ([Forum Geometricorum VIII][])|
-|6    ||
+|6    |4      |Same as inscribed in a given circle (see below).|
 |8    ||
 |10   ||
 |12   ||
