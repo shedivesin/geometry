@@ -7,27 +7,27 @@ function eq(x, y) {
 }
 
 
-// FIXME: Try replacing this with just storing indices into the points array.
 const cx = [0, 1];
 const cy = [0, 0];
 const cr = [1, 1];
 
-function circle_eq(i, j) {
-  return eq(cx[i], cx[j]) && eq(cy[i], cy[j]) && eq(cr[i], cr[j]);
-}
-
-function add_circle(n, i, j) {
-  if(i === j) { return n; }
-
-  cx[n] = px[i];
-  cy[n] = py[i];
-  cr[n] = Math.hypot(px[j] - px[i], py[j] - py[i]);
-  for(let k = 0; k < n; k++) {
-    if(circle_eq(k, n)) {
-      return n;
+function contains_circle(n, x, y, r) {
+  for(let i = 0; i < n; i++) {
+    if(eq(cx[i], x) && eq(cy[i], y) && eq(cr[i], r)) {
+      return true;
     }
   }
 
+  return false;
+}
+
+function add_circle(n, x1, y1, x2, y2) {
+  const r = Math.hypot(x2 - x1, y2 - y1);
+  if(contains_circle(n, x1, y1, r)) { return n; }
+
+  cx[n] = x1;
+  cy[n] = y1;
+  cr[n] = r;
   return n + 1;
 }
 
@@ -35,19 +35,21 @@ function add_circle(n, i, j) {
 const px = [0, 1, 0.5, 0.5];
 const py = [0, 0, -0.8660254037844386, 0.8660254037844386];
 
-function point_eq(i, j) {
-  return eq(px[i], px[j]) && eq(py[i], py[j]);
-}
-
-function add_point(n, x, y) {
-  px[n] = x;
-  py[n] = y;
+function contains_point(n, x, y) {
   for(let i = 0; i < n; i++) {
-    if(point_eq(i, n)) {
-      return n;
+    if(eq(px[i], x) && eq(py[i], y)) {
+      return true;
     }
   }
 
+  return false;
+}
+
+function add_point(n, x, y) {
+  if(contains_point(n, x, y)) { return n; }
+
+  px[n] = x;
+  py[n] = y;
   return n + 1;
 }
 
@@ -74,8 +76,6 @@ function add_intersection_points(n, x1, y1, r1, x2, y2, r2) {
 }
 
 
-// FIXME: This might be optimized by not comparing EVERY point and circle, but
-// just the ones newly added.
 function search_to_depth(test, cn, pn, d) {
   if(test(cn, pn)) {
     // console.log("%j", circles.slice(0, cn));
@@ -95,7 +95,13 @@ function search_to_depth(test, cn, pn, d) {
 
   for(let i = 0; i < pn; i++) {
     for(let j = 0; j < pn; j++) {
-      const cn2 = add_circle(cn, i, j);
+      if(i === j) { continue; }
+
+      const cn2 = add_circle(
+        cn, 
+        px[i], py[i],
+        px[j], py[j],
+      );
       if(cn2 === cn) { continue; }
 
       let pn2 = pn;
