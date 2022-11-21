@@ -1,5 +1,23 @@
 "use strict";
 
+// 1.  Try simply adding the point and then using "is the last point a
+//     duplicate?" as our primitive (rather than checking before writing).
+//
+// 2.  If that's no slower, try passing around indices rather than struct
+//     values.
+//
+// 3.  If that's no slower, try storing circles as indices into the points
+//     array (origin and radius).
+//
+// 4.  If that's no slower, try adding lt/gt/le/ge functions (defined similarly
+//     to eq()) and use those for circle intersections (hopefully catching more
+//     bad cases early).
+//
+// 5.  Finally, the big one: instead of searching construction paths, make ALL
+//     circles/points at a given level of the tree, and then searching the
+//     resulting point set for constructions. Once one is found, we can trace
+//     the tree back and find the minimal set of circles that will produce it.
+
 const ε = 5e-9;
 
 function eq(x, y) {
