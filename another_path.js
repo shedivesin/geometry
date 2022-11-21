@@ -147,11 +147,10 @@ function search(test) {
     found = search_to_depth(test, 2, 4, d);
 
     console.log(
-      "%d solutions with %d circles (%d ms, %d cs, %d ps).",
+      "%d solutions with %d circles (%d ms, %d ps).",
       found,
       d,
       Date.now() - start,
-      cx.length,
       px.length,
     );
   }
