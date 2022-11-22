@@ -1,17 +1,9 @@
 "use strict";
 
-const EPS = 5e-9;
+const ε = 5e-9;
 
 function eq(x, y) {
-  return Math.abs(y - x) < EPS;
-}
-
-function eq2(x1, y1, x2, y2) {
-  return eq(x1, x2) && eq(y1, y2);
-}
-
-function eq3(x1, y1, r1, x2, y2, r2) {
-  return eq(x1, x2) && eq(y1, y2) && eq(r1, r2);
+  return Math.abs(y - x) < ε;
 }
 
 
@@ -21,7 +13,7 @@ const circles = [0, 0, 1, 1, 0, 1];
 
 function contains_circle(n, x, y, r) {
   for(let i = 0; i < n; i += 3) {
-    if(eq3(circles[i], circles[i+1], circles[i+2], x, y, r)) {
+    if(eq(circles[i], x) && eq(circles[i+1], y) && eq(circles[i+2], r)) {
       return true;
     }
   }
@@ -30,8 +22,6 @@ function contains_circle(n, x, y, r) {
 }
 
 function add_circle(n, x1, y1, x2, y2) {
-  if(eq2(x1, y1, x2, y2)) { return n; }
-
   const r = Math.hypot(x2 - x1, y2 - y1);
   if(contains_circle(n, x1, y1, r)) { return n; }
   // if(n >= MAX_CIRCLES) { throw new Error("MAX_CIRCLES not big enough"); }
@@ -49,7 +39,7 @@ const points = [0, 0, 1, 0];
 
 function contains_point(n, x, y) {
   for(let i = 0; i < n; i += 2) {
-    if(eq2(points[i], points[i+1], x, y)) {
+    if(eq(points[i], x) && eq(points[i+1], y)) {
       return true;
     }
   }
@@ -146,7 +136,7 @@ function hash_circles(n) {
 
   for(let i = 3; i < n; i += 3) {
     for(let j = 0; j < i; j += 3) {
-      if(eq2(circles[i], circles[i+1], circles[j], circles[j+1])) { continue; }
+      if(eq(circles[i], circles[j]) && eq(circles[i+1], circles[j+1])) { continue; }
 
       const r = Math.hypot(circles[j] - circles[i], circles[j+1] - circles[i+1]);
       const cos = (circles[j] - circles[i]) / r;
