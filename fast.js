@@ -61,14 +61,12 @@ function add_intersection_points(n, x1, y1, r1, x2, y2, r2) {
   y2 -= y1;
 
   const d_sq = x2 * x2 + y2 * y2;
-  if(d_sq >= (r1 + r2) * (r1 + r2)) { return n; }
-  if(d_sq <= (r1 - r2) * (r1 - r2)) { return n; }
+  // FIXME: Adjust these checks to use epsilon...
+  if(d_sq > (r1 + r2) * (r1 + r2)) { return n; }
+  if(d_sq < (r1 - r2) * (r1 - r2)) { return n; }
 
   const a = (r1 * r1 - r2 * r2 + d_sq) / (2 * d_sq);
-  const h_sq = r1 * r1 - a * a * d_sq;
-  if(h_sq <= 0) { return n; }
-
-  const h = Math.sqrt(h_sq / d_sq);
+  const h = Math.sqrt(Math.max(r1 * r1 / d_sq - a * a, 0));
 
   x1 += x2 * a;
   y1 += y2 * a;
