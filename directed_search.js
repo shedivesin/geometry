@@ -74,8 +74,8 @@ function add_intersection_points(x1, y1, r1, x2, y2, r2) {
   x2 *= h;
   y2 *= h;
 
-  add_point(x1 + y2, y1 - x2);
   add_point(x1 - y2, y1 + x2);
+  add_point(x1 + y2, y1 - x2);
   return true;
 }
 
@@ -133,12 +133,88 @@ function list_circles() {
   return circles;
 }
 
-function search_to_depth(test, results, depth) {
-  if(test()) {
-    results.push(list_circles());
-    return;
+function ftob(x) {
+  x = Math.round(x * 1e8);
+  if(!(x >= -2147483648 && x < 2147483648)) {
+    throw new Error("Out of range");
   }
 
+  return String.fromCharCode(
+    (x >> 24) & 255,
+    (x >> 16) & 255,
+    (x >>  8) & 255,
+    (x >>  0) & 255,
+  );
+}
+
+function hash_circle(x, y, r) {
+  return ftob(r) + ftob(x) + ftob(y);
+}
+
+function hash_circles_affine(x0, y0, m00, m10, m01, m11) {
+  const hash = new Array(cn);
+
+  for(let i = 0; i < cn; i++) {
+    hash[i] = hash_circle(
+      (cx[i] - x0) * m00 + (cy[i] - y0) * m10,
+      (cx[i] - x0) * m01 + (cy[i] - y0) * m11,
+      cr[i],
+    );
+  }
+
+  hash.sort();
+  return hash.join("");
+}
+
+function min(min, a, b, c, d) {
+  if(min === undefined || a.localeCompare(min) < 0) { min = a; }
+  if(b.localeCompare(min) < 0) { min = b; }
+  if(c.localeCompare(min) < 0) { min = c; }
+  if(d.localeCompare(min) < 0) { min = d; }
+  return min;
+}
+
+function hash_circles() {
+  if(cn === 0) {
+    return "";
+  }
+  if(cn === 1) {
+    return hash_circle(0, 0, cr[0]);
+  }
+
+  let best;
+
+  for(let i = 1; i < cn; i++) {
+    for(let j = 0; j < i; j++) {
+      if(eq(cx[j], cx[i]) && eq(cy[j], cy[i])) {
+        continue;
+      }
+
+      const r = Math.hypot(cx[i] - cx[j], cy[i] - cy[j]);
+      const cos = (cx[i] - cx[j]) / r;
+      const sin = (cy[i] - cy[j]) / r;
+
+      best = min(
+        best,
+        hash_circles_affine(cx[j], cy[j], cos, sin, -sin, cos),
+        hash_circles_affine(cx[j], cy[j], cos, sin, sin, -cos),
+        hash_circles_affine(cx[i], cy[i], -cos, -sin, sin, -cos),
+        hash_circles_affine(cx[i], cy[i], -cos, -sin, -sin, cos),
+      );
+    }
+  }
+
+  return best;
+}
+
+function search_to_depth(test, results, depth) {
+  if(test()) {
+    const hash = hash_circles();
+    if(!results.has(hash)) {
+      results.set(hash, list_circles());
+    }
+    return;
+  }
   if(cn >= depth) {
     return;
   }
@@ -167,9 +243,9 @@ function search_to_depth(test, results, depth) {
 
 function search(seeds, test) {
   const n = seeds.length;
-  const results = [];
+  const results = new Map();
 
-  for(let depth = 0; !results.length; depth++) {
+  for(let depth = 0; !results.size; depth++) {
     const start = process.hrtime();
 
     for(let i = 0; i < n; i++) {
@@ -191,13 +267,13 @@ function search(seeds, test) {
     const [s, ns] = process.hrtime(start);
     console.log(
       "%d solutions with %d circles (%s s).",
-      results.length,
+      results.size,
       depth,
       (s + ns / 1e9).toFixed(6),
     );
   }
 
-  return results;
+  return Array.from(results.values());
 }
 
 
