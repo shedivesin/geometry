@@ -1,6 +1,9 @@
 # geometry
 This repository contains a toy program to search for minimal geometric
-constructions using only a compass.
+constructions using only compasses. The idea is, one is given two arbitrary
+points, one may draw circles centered at one point with radius extending to
+a second point. (If that circle intersects any previously drawn circles, the
+intersection points may also be used as points.)
 
 ## Regular Polygons
 The game is, given points A and B, find a regular (or, when that is impossible,
