@@ -14,10 +14,10 @@ This table contains my best solutions.
 
 |_n_|Circles|Notes                                             |
 |:-:|:-----:|--------------------------------------------------|
-|3  |[3][i3]|                                                  |
+|3  |[4][i3]|Same as the hexagon.                              |
 |4  |[6][i4]|Called "Napoleon's Problem."                      |
 |5  |[8][i5]|                                                  |
-|6  |[4][i6]|Construction continued from the triangle.         |
+|6  |[4][i6]|Same as the triangle.                             |
 |7  |       |Following Albrect Dürer's construction (_a_=√3/2).|
 |8  |       |                                                  |
 |9  |       |                                                  |
