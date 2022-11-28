@@ -1,7 +1,7 @@
 "use strict";
 
 const EPSILON = 5e-9;
-const MAX_POINTS = 64;
+const MAX_POINTS = 128;
 const MAX_CIRCLES = 16;
 
 const buffer = new ArrayBuffer(MAX_POINTS * 16 + MAX_CIRCLES * 24);
