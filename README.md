@@ -19,9 +19,9 @@ This table contains my best solutions.
 |5  |[8][i5]|                                                  |
 |6  |[4][i6]|Same as the triangle.                             |
 |7  |       |Following Albrect Dürer's construction (_a_=√3/2).|
-|8  |       |                                                  |
+|8  |10     |                                                  |
 |9  |       |                                                  |
-|10 |       |                                                  |
+|10 |12     |                                                  |
 |12 |[9][iC]|Construction continued from the square.           |
 |15 |       |                                                  |
 |17 |       |                                                  |
