@@ -1,8 +1,10 @@
 "use strict";
 
+
 const EPSILON = 5e-9;
 const MAX_POINTS = 128;
 const MAX_CIRCLES = 16;
+
 
 const buffer = new ArrayBuffer(MAX_POINTS * 16 + MAX_CIRCLES * 24);
 
@@ -23,6 +25,7 @@ let cn = 0;
 function eq(x, y) {
   return Math.abs(y - x) < EPSILON;
 }
+
 
 function clear_points() {
   pn = 2;
@@ -53,6 +56,8 @@ function add_point(x, y) {
   return true;
 }
 
+// http://paulbourke.net/geometry/circlesphere/
+// https://mathworld.wolfram.com/Circle-CircleIntersection.html
 function add_intersection_points(x1, y1, r1, x2, y2, r2) {
   x2 -= x1;
   y2 -= y1;
@@ -79,15 +84,6 @@ function add_intersection_points(x1, y1, r1, x2, y2, r2) {
   return true;
 }
 
-function list_points() {
-  const points = new Array(pn);
-
-  for(let i = 0; i < pn; i++) {
-    points[i] = [px[i], py[i]];
-  }
-
-  return points;
-}
 
 function clear_circles() {
   cn = 0;
@@ -132,6 +128,7 @@ function list_circles() {
 
   return circles;
 }
+
 
 function ftob(x) {
   x = Math.round(x * 1e8);
@@ -206,6 +203,7 @@ function hash_circles() {
 
   return best;
 }
+
 
 function search_to_depth(test, results, depth) {
   if(test()) {
