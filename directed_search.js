@@ -263,7 +263,7 @@ function search(seeds, test) {
     }
 
     const [s, ns] = process.hrtime(start);
-    console.log(
+    console.warn(
       "%d solutions with %d circles (%s s).",
       results.size,
       depth,
@@ -271,11 +271,25 @@ function search(seeds, test) {
     );
   }
 
+  console.warn("---");
+
   return Array.from(results.values());
 }
 
 
-console.log(
+function print(solutions) {
+  for(const solution of solutions) {
+    console.log(
+      "%s",
+      solution.
+        map(x => x.map(x => Math.round(x * 1e8) / 1e8).join(",")).
+        join(";"),
+    );
+  }
+}
+
+
+print(
   search(
     search(
       [[]],
