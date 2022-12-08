@@ -311,9 +311,45 @@ const SEED4 = [
   [...SEED3[1], [-1, 0, 3]]
 ];
 
-print(
-  search(
-    SEED4,
-    () => has_point(-1, 0) && has_point(0, -1) && has_point(0, 1),
-  ),
-);
+function distance_sq(i, j) {
+  const x = px[j] - px[i];
+  const y = py[j] - py[i];
+  return x * x + y * y;
+}
+
+function has_square() {
+  for(let i = 3; i < pn; i++) {
+    for(let j = 2; j < i; j++) {
+      const ab = distance_sq(j, i);
+
+      for(let k = 1; k < j; k++) {
+        const ac = distance_sq(k, i);
+        const bc = distance_sq(k, j);
+        const min3 = Math.min(ab, ac, bc);
+        const max3 = Math.max(ab, ac, bc);
+        if(!eq(min3 * 2, max3)) { continue; }
+
+        for(let l = 0; l < k; l++) {
+          const ad = distance_sq(l, i);
+          const bd = distance_sq(l, j);
+          const cd = distance_sq(l, k);
+          const min4 = Math.min(min3, ad, bd, cd);
+          const max4 = Math.max(max3, ad, bd, cd);
+          if(!eq(min4 * 2, max4)) { continue; }
+
+          const side = eq(ab, min4) + eq(ac, min4) + eq(bc, min4) + eq(ad, min4) + eq(bd, min4) + eq(cd, min4);
+          if(side !== 4) { continue; }
+
+          const diag = eq(ab, max4) + eq(ac, max4) + eq(bc, max4) + eq(ad, max4) + eq(bd, max4) + eq(cd, max4);
+          if(diag !== 2) { continue; }
+
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+print(search(SEED4, has_square));
