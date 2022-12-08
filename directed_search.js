@@ -289,22 +289,26 @@ function print(solutions) {
 }
 
 
-const SQRT3 = Math.sqrt(3);
 // NB: This is the list of all possible constructions involving four circles,
 // when rotations and reflections are removed. The benefit to defining it
 // explicitly, rather than simply asking the search for it, is that we can
 // avoid a level of IEEE floating point rounding errors.
+const SEED2 = [[[0, 0, 1], [1, 0, 1]]];
+const SEED3 = [
+  [...SEED2[0], [0.5, 0.8660254037844386, 1]],
+  [...SEED2[0], [0.5, 0.8660254037844386, 1.7320508075688772]],
+];
 const SEED4 = [
-  [[0, 0, 1], [1, 0, 1], [1/2, SQRT3/2, 1], [1/2, SQRT3/2, SQRT3]],
-  [[0, 0, 1], [1, 0, 1], [1/2, SQRT3/2, 1], [1/2, -SQRT3/2, 1]],
-  [[0, 0, 1], [1, 0, 1], [1/2, SQRT3/2, 1], [1/2, -SQRT3/2, SQRT3]],
-  [[0, 0, 1], [1, 0, 1], [1/2, SQRT3/2, 1], [1/2, -SQRT3/2, 2]],
-  [[0, 0, 1], [1, 0, 1], [1/2, SQRT3/2, SQRT3], [0, 0, 2]],
-  [[0, 0, 1], [1, 0, 1], [1/2, SQRT3/2, SQRT3], [1/2, -SQRT3/2, SQRT3]],
-  [[0, 0, 1], [1, 0, 1], [1/2, SQRT3/2, SQRT3], [-1, 0, 1]],
-  [[0, 0, 1], [1, 0, 1], [1/2, SQRT3/2, SQRT3], [-1, 0, SQRT3]],
-  [[0, 0, 1], [1, 0, 1], [1/2, SQRT3/2, SQRT3], [-1, 0, 2]],
-  [[0, 0, 1], [1, 0, 1], [1/2, SQRT3/2, SQRT3], [-1, 0, 3]]
+  [...SEED3[0], [0.5, 0.8660254037844386, 1.7320508075688772]],
+  [...SEED3[0], [0.5, -0.8660254037844386, 1]],
+  [...SEED3[0], [0.5, -0.8660254037844386, 1.7320508075688772]],
+  [...SEED3[0], [0.5, -0.8660254037844386, 2]],
+  [...SEED3[1], [0, 0, 2]],
+  [...SEED3[1], [0.5, -0.8660254037844386, 1.7320508075688772]],
+  [...SEED3[1], [-1, 0, 1]],
+  [...SEED3[1], [-1, 0, 1.7320508075688772]],
+  [...SEED3[1], [-1, 0, 2]],
+  [...SEED3[1], [-1, 0, 3]]
 ];
 
 print(
