@@ -352,4 +352,56 @@ function has_square() {
   return false;
 }
 
-print(search(SEED4, has_square));
+function has_pentagon() {
+  for(let i = 4; i < pn; i++) {
+    for(let j = 3; j < i; j++) {
+      const ab = distance_sq(j, i);
+
+      for(let k = 2; k < j; k++) {
+        const ac = distance_sq(k, i);
+        const bc = distance_sq(k, j);
+        const min3 = Math.min(ab, ac, bc);
+        const max3 = Math.max(ab, ac, bc);
+        if(!eq(min3 * 2.618033988749895, max3)) { continue; }
+
+        for(let l = 1; l < k; l++) {
+          const ad = distance_sq(l, i);
+          const bd = distance_sq(l, j);
+          const cd = distance_sq(l, k);
+          const min4 = Math.min(min3, ad, bd, cd);
+          const max4 = Math.max(max3, ad, bd, cd);
+          if(!eq(min4 * 2.618033988749895, max4)) { continue; }
+
+          for(let m = 0; m < l; m++) {
+            const ae = distance_sq(m, i);
+            const be = distance_sq(m, j);
+            const ce = distance_sq(m, k);
+            const de = distance_sq(m, l);
+            const min5 = Math.min(min4, ae, be, ce, de);
+            const max5 = Math.max(max4, ae, be, ce, de);
+            if(!eq(min5 * 2.618033988749895, max5)) { continue; }
+
+            const side = eq(ab, min5) +
+              eq(ac, min5) + eq(bc, min5) +
+              eq(ad, min5) + eq(bd, min5) + eq(cd, min5) +
+              eq(ae, min5) + eq(be, min5) + eq(ce, min5) + eq(de, min5);
+            if(side !== 5) { continue; }
+
+            const diag = eq(ab, max5) +
+              eq(ac, max5) + eq(bc, max5) +
+              eq(ad, max5) + eq(bd, max5) + eq(cd, max5) +
+              eq(ae, max5) + eq(be, max5) + eq(ce, max5) + eq(de, max5);
+            if(diag !== 5) { continue; }
+
+            return true;
+          }
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+// print(search(SEED4, has_square));
+print(search(SEED4, has_pentagon));
