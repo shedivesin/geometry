@@ -1,6 +1,3 @@
-"use strict";
-
-
 const EPSILON = 5e-9;
 const MAX_POINTS = 128;
 const MAX_CIRCLES = 16;
@@ -11,7 +8,7 @@ const buffer = new ArrayBuffer(MAX_POINTS * 16 + MAX_CIRCLES * 24);
 const px = new Float64Array(buffer, 0, MAX_POINTS);
 const py = new Float64Array(buffer, MAX_POINTS * 8, MAX_POINTS);
 let pn = 2;
-px[0] = 0;
+px[0] = -1;
 py[0] = 0;
 px[1] = 1;
 py[1] = 0;
@@ -293,22 +290,22 @@ function print(solutions) {
 // when rotations and reflections are removed. The benefit to defining it
 // explicitly, rather than simply asking the search for it, is that we can
 // avoid a level of IEEE floating point rounding errors.
-const SEED2 = [[[0, 0, 1], [1, 0, 1]]];
+const SEED2 = [[[-1, 0, 2], [1, 0, 2]]];
 const SEED3 = [
-  [...SEED2[0], [0.5, 0.8660254037844386, 1]],
-  [...SEED2[0], [0.5, 0.8660254037844386, 1.7320508075688772]],
+  [...SEED2[0], [0, 1.7320508075688772, 2]],
+  [...SEED2[0], [0, 1.7320508075688772, 3.4641016151377544]],
 ];
 const SEED4 = [
-  [...SEED3[0], [0.5, 0.8660254037844386, 1.7320508075688772]],
-  [...SEED3[0], [0.5, -0.8660254037844386, 1]],
-  [...SEED3[0], [0.5, -0.8660254037844386, 1.7320508075688772]],
-  [...SEED3[0], [0.5, -0.8660254037844386, 2]],
-  [...SEED3[1], [0, 0, 2]],
-  [...SEED3[1], [0.5, -0.8660254037844386, 1.7320508075688772]],
-  [...SEED3[1], [-1, 0, 1]],
-  [...SEED3[1], [-1, 0, 1.7320508075688772]],
-  [...SEED3[1], [-1, 0, 2]],
-  [...SEED3[1], [-1, 0, 3]]
+  [...SEED3[0], [0, 1.7320508075688772, 3.4641016151377544]],
+  [...SEED3[0], [0, -1.7320508075688772, 2]],
+  [...SEED3[0], [0, -1.7320508075688772, 3.4641016151377544]],
+  [...SEED3[0], [0, -1.7320508075688772, 4]],
+  [...SEED3[1], [-1, 0, 4]],
+  [...SEED3[1], [0, -1.7320508075688772, 3.4641016151377544]],
+  [...SEED3[1], [-3, 0, 2]],
+  [...SEED3[1], [-3, 0, 3.4641016151377544]],
+  [...SEED3[1], [-3, 0, 4]],
+  [...SEED3[1], [-3, 0, 6]]
 ];
 
 function distance_sq(i, j) {
