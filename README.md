@@ -6,9 +6,8 @@ a second point. (If that circle intersects any previously drawn circles, the
 intersection points may also be used as points.)
 
 ## Regular Polygons
-The game is, given points A and B, find a regular (or, when that is impossible,
-an approximately regular) polygon of a given number of sides inscribed in the
-circle A(B) with one of its vertices at B.
+The game is, given points A and B, find a regular polygon of a given number
+of sides inscribed in the circle A(B) with one of its vertices at B.
 
 This table contains my best solutions.
 
@@ -18,9 +17,9 @@ This table contains my best solutions.
 |4  |[6][i4] |Called "Napoleon's Problem."                      |
 |5  |[8][i5] |                                                  |
 |6  |[4][i6] |Same as the triangle.                             |
-|7  |[9][i7] |Following Albrect Dürer's construction (_a_=√3/2).|
+|7  |        |_impossible_                                      |
 |8  |[10][i8]|                                                  |
-|9  |        |                                                  |
+|9  |        |_impossible_                                      |
 |10 |12      |                                                  |
 |12 |[9][iC] |Construction continued from the square.           |
 |15 |        |                                                  |
@@ -30,6 +29,5 @@ This table contains my best solutions.
 [i4]: https://amissio.net/geo/constructions/square_3.svg
 [i5]: https://amissio.net/geo/constructions/inscribed_regular_pentagon.svg
 [i6]: https://amissio.net/geo/constructions/regular_hexagon.svg
-[i7]: https://amissio.net/geo/constructions/durers_heptagon.svg
 [i8]: https://amissio.net/geo/constructions/inscribed_regular_octagon.svg
 [iC]: https://amissio.net/geo/constructions/regular_dodecagon.svg
