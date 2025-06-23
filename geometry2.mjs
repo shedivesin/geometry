@@ -1,4 +1,5 @@
 import Algebrite from "algebrite";
+import readline from "node:readline";
 
 class Point {
   constructor(x, y) {
@@ -61,51 +62,52 @@ class Circle extends Point {
   }
 }
 
-const points = [
-  new Point("0", "0"),
-  new Point("1", "0"),
-];
+const points = new Map();
+const circles = new Map();
+readline.
+  createInterface({input: process.stdin}).
+  on("line", line => {
+    const match = line.match(/^P([^,]*),([^,]*)$|^C([^,]*),([^,]*),([^,]*)$/);
+    if(match !== null && match[1] && match[2]) {
+      const p = new Point(match[1], match[2]);
+      points.set(p.toString(), p);
+    }
+    else if(match !== null && match[3] && match[4] && match[5]) {
+      const c = new Circle(match[3], match[4], match[5]);
+      circles.set(c.toString(), c);
+    }
+    else {
+      throw new Error("invalid line");
+    }
+  }).
+  on("close", () => {
+    // Add circles from points
+    for(const p of points.values()) {
+      for(const q of points.values()) {
+        if(p === q) { continue; }
 
-const circles = [
-];
+        const c = new Circle(p.x, p.y, p.distance(q));
+        const s = c.toString();
+        if(!circles.has(s)) {
+          circles.set(s, c);
+          console.log("C%s", s);
+        }
+      }
+    }
 
-for(let d = 0; d < 4; d++) {
-  // Add points from circles
-  for(let i = 0; i < circles.length - 1; i++) {
-    const a = circles[i];
-    for(let j = i + 1; j < circles.length; j++) {
-      const b = circles[j];
-      const ps = a.intersect(b);
-      points: for(const p of ps) {
-        for(let k = 0; k < points.length; k++) {
-          const q = points[k];
-          if(p.equals(q)) {
-            continue points;
+    // Add points from circles
+    for(const a of circles.values()) {
+      for(const b of circles.values()) {
+        if(a === b) { break; }
+
+        const ps = a.intersect(b);
+        for(const p of a.intersect(b)) {
+          const s = p.toString();
+          if(!points.has(s)) {
+            points.set(s, p);
+            console.log("P%s", s);
           }
         }
-        points.push(p);
       }
     }
-  }
-
-
-  // Add circles from points
-  for(let i = 0; i < points.length; i++) {
-    const p = points[i];
-    circles: for(let j = 0; j < points.length; j++) {
-      if(i === j) { continue; }
-
-      const q = points[j];
-      const a = new Circle(p.x, p.y, p.distance(q));
-      for(let k = 0; k < circles.length; k++) {
-        const b = circles[k];
-        if(a.equals(b)) {
-          continue circles;
-        }
-      }
-
-      circles.push(a);
-      console.log("%s", a);
-    }
-  }
-}
+  });
