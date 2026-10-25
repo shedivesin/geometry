@@ -8,7 +8,7 @@ const buffer = new ArrayBuffer(MAX_POINTS * 16 + MAX_CIRCLES * 24);
 const px = new Float64Array(buffer, 0, MAX_POINTS);
 const py = new Float64Array(buffer, MAX_POINTS * 8, MAX_POINTS);
 let pn = 2;
-px[0] = -1;
+px[0] = 0;
 py[0] = 0;
 px[1] = 1;
 py[1] = 0;
@@ -69,8 +69,14 @@ function add_intersection_points(x1, y1, r1, x2, y2, r2) {
   }
 
   const a = (r1 * r1 - r2 * r2 + d_sq) / (2 * d_sq);
-  const h = Math.sqrt(Math.max(r1 * r1 / d_sq - a * a, 0));
+  const h_sq = r1 * r1 / d_sq - a * a;
+  // NB: If the two circles are tangent, we don't want the points anyway,
+  // since it's difficult to tell exactly where the intersection even is.
+  if(h_sq < EPSILON) {
+    return true;
+  }
 
+  const h = Math.sqrt(h_sq);
   x1 += x2 * a;
   y1 += y2 * a;
   x2 *= h;
@@ -290,22 +296,22 @@ function print(solutions) {
 // when rotations and reflections are removed. The benefit to defining it
 // explicitly, rather than simply asking the search for it, is that we can
 // avoid a level of IEEE floating point rounding errors.
-const SEED2 = [[[-1, 0, 2], [1, 0, 2]]];
+const SEED2 = [[[0, 0, 1], [1, 0, 1]]];
 const SEED3 = [
-  [...SEED2[0], [0, 1.7320508075688772, 2]],
-  [...SEED2[0], [0, 1.7320508075688772, 3.4641016151377544]],
+  [...SEED2[0], [0.5, 0.8660254037844386, 1]],
+  [...SEED2[0], [0.5, 0.8660254037844386, 1.7320508075688772]],
 ];
 const SEED4 = [
-  [...SEED3[0], [0, 1.7320508075688772, 3.4641016151377544]],
-  [...SEED3[0], [0, -1.7320508075688772, 2]],
-  [...SEED3[0], [0, -1.7320508075688772, 3.4641016151377544]],
-  [...SEED3[0], [0, -1.7320508075688772, 4]],
-  [...SEED3[1], [-1, 0, 4]],
-  [...SEED3[1], [0, -1.7320508075688772, 3.4641016151377544]],
-  [...SEED3[1], [-3, 0, 2]],
-  [...SEED3[1], [-3, 0, 3.4641016151377544]],
-  [...SEED3[1], [-3, 0, 4]],
-  [...SEED3[1], [-3, 0, 6]]
+  [...SEED3[0], [0.5, 0.8660254037844386, 1.7320508075688772]],
+  [...SEED3[0], [0.5, -0.8660254037844386, 1]],
+  [...SEED3[0], [0.5, -0.8660254037844386, 1.7320508075688772]],
+  [...SEED3[0], [0.5, -0.8660254037844386, 2]],
+  [...SEED3[1], [0, 0, 2]],
+  [...SEED3[1], [0.5, -0.8660254037844386, 1.7320508075688772]],
+  [...SEED3[1], [-1, 0, 1]],
+  [...SEED3[1], [-1, 0, 1.7320508075688772]],
+  [...SEED3[1], [-1, 0, 2]],
+  [...SEED3[1], [-1, 0, 3]]
 ];
 
 function distance_sq(i, j) {
